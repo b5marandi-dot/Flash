@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="فلش‌کارت">
+<meta name="theme-color" content="#0f0f13">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>فلش‌کارت</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f13;--surface:#1a1a24;--surface2:#22222f;--accent:#6c8eff;--accent2:#ff6c8e;--text:#e8e8f0;--muted:#7878a0;--border:rgba(108,142,255,0.15);--green:#42e0b8;--red:#ff5f5f;--orange:#ffab42}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Vazirmatn",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+body::before{content:"";position:fixed;top:-30%;right:-10%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(108,142,255,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+header{z-index:10;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(15,15,19,.95);backdrop-filter:blur(10px)}
+.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hstats{display:flex;gap:8px}
+.hstat{font-size:.73rem;color:var(--muted);background:var(--surface);padding:4px 10px;border-radius:20px;border:1px solid var(--border);display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%}
+nav{z-index:10;display:flex;gap:2px;padding:10px 12px 0;background:rgba(15,15,19,.9);border-bottom:1px solid var(--border);overflow-x:auto}
+.nav-btn{background:none;border:none;color:var(--muted);font-family:"Vazirmatn",sans-serif;font-size:.8rem;padding:8px 12px;border-radius:8px 8px 0 0;cursor:pointer;transition:all .2s;position:relative;white-space:nowrap}
+.nav-btn.active{color:var(--accent);background:var(--surface)}
+.nav-btn.active::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+.screen{display:none;flex:1;padding:16px;flex-direction:column;position:relative;z-index:1}
+.screen.active{display:flex}
+.leitner-boxes{display:flex;gap:5px;margin-bottom:14px}
+.lbox{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 6px;text-align:center}
+.lbox-num{font-size:.85rem;font-weight:700}
+.lbox-label{font-size:.56rem;color:var(--muted);margin-top:1px}
+.lbox-count{font-size:.7rem;margin-top:3px}
+.lbox-1 .lbox-num{color:var(--red)}.lbox-2 .lbox-num{color:var(--orange)}.lbox-3 .lbox-num{color:#ffe44d}.lbox-4 .lbox-num{color:var(--accent)}.lbox-5 .lbox-num{color:var(--green)}
+.deck-bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.deck-chip{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:"Vazirmatn",sans-serif;font-size:.75rem;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .2s}
+.deck-chip.active{background:rgba(108,142,255,.12);border-color:var(--accent);color:var(--accent)}
+.card-scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.prog-wrap{width:100%;max-width:480px;height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s ease}
+.card-counter{font-size:.74rem;color:var(--muted);text-align:center}
+.card-wrap{width:100%;max-width:480px;height:255px;perspective:1200px;cursor:pointer}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;width:100%;height:100%;border-radius:20px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.card-front{background:#1e1e2e;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.card-back{background:#12202e;border:1px solid rgba(108,142,255,.25);box-shadow:0 8px 40px rgba(108,142,255,.1);transform:rotateY(180deg)}
+.card-label{font-size:.64rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:11px}
+.card-text{font-size:1.3rem;font-weight:600;line-height:1.6}
+.card-back .card-text{color:#a8d8ff}
+.card-meta{position:absolute;top:11px;right:12px;display:flex;gap:5px;align-items:center}
+.card-tag{font-size:.64rem;background:rgba(108,142,255,.1);color:var(--accent);padding:2px 7px;border-radius:7px;border:1px solid var(--border)}
+.card-box-badge{font-size:.64rem;padding:2px 7px;border-radius:7px;border:1px solid}
+.flip-hint{font-size:.72rem;color:var(--muted)}
+.ans-row{display:flex;gap:7px;width:100%;max-width:480px;opacity:0;pointer-events:none;transform:translateY(8px);transition:all .3s}
+.ans-row.visible{opacity:1;pointer-events:all;transform:translateY(0)}
+.ans-btn{flex:1;border:none;border-radius:11px;padding:10px 4px;font-family:"Vazirmatn",sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.ans-again{background:rgba(255,95,95,.12);color:var(--red);border:1px solid rgba(255,95,95,.25)}
+.ans-hard{background:rgba(255,171,66,.1);color:var(--orange);border:1px solid rgba(255,171,66,.25)}
+.ans-good{background:rgba(108,142,255,.1);color:var(--accent);border:1px solid rgba(108,142,255,.25)}
+.ans-easy{background:rgba(66,224,184,.1);color:var(--green);border:1px solid rgba(66,224,184,.25)}
+.ans-btn:hover{transform:translateY(-2px);filter:brightness(1.2)}
+.ans-interval{font-size:.6rem;opacity:.65}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);text-align:center}
+.empty-icon{font-size:3rem}
+.ai-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px}
+.ai-title{font-size:.75rem;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ai-row{display:flex;gap:8px}
+.ai-row textarea{flex:1;min-height:75px;resize:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:"Vazirmatn",sans-serif;font-size:.86rem;padding:10px 12px;outline:none}
+.ai-row textarea:focus{border-color:var(--accent)}
+.btn-ai{background:linear-gradient(135deg,var(--accent),#8e6cff);border:none;border-radius:10px;color:#fff;font-family:"Vazirmatn",sans-serif;font-size:.78rem;font-weight:700;padding:10px 13px;cursor:pointer;align-self:flex-end;transition:all .2s;white-space:nowrap}
+.btn-ai:hover{transform:translateY(-2px)}.btn-ai:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ai-preview{margin-top:10px;display:flex;flex-direction:column;gap:7px}
+.ai-card-preview{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.acp-texts{flex:1;min-width:0}
+.acp-q{font-size:.82rem;font-weight:600}
+.acp-a{font-size:.72rem;color:var(--muted);margin-top:2px}
+.acp-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:.75rem;background:none;color:var(--text)}
+.acp-check.checked{background:var(--accent);border-color:var(--accent)}
+.ai-save-btn{background:linear-gradient(135deg,var(--green),#2ec49c);border:none;border-radius:10px;color:#0a2a20;font-family:"Vazirmatn",sans-serif;font-size:.83rem;font-weight:700;padding:11px;cursor:pointer;transition:all .2s;width:100%;margin-top:6px}
+.ai-save-btn:hover{transform:translateY(-2px)}
+.divider{display:flex;align-items:center;gap:10px;margin:12px 0}
+.divider-line{flex:1;height:1px;background:var(--border)}
+.divider-text{font-size:.7rem;color:var(--muted)}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+label{font-size:.77rem;color:var(--muted)}
+input,textarea,select{background:var(--surface);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:"Vazirmatn",sans-serif;font-size:.88rem;padding:10px 13px;outline:none;transition:border-color .2s;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,142,255,.1)}
+textarea{min-height:70px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#8e6cff);border:none;border-radius:11px;color:#fff;font-family:"Vazirmatn",sans-serif;font-size:.88rem;font-weight:700;padding:12px;cursor:pointer;transition:all .2s;width:100%}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(108,142,255,.3)}
+.row{display:flex;gap:8px}.row input{flex:1}
+.btn-sm{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--accent);font-family:"Vazirmatn",sans-serif;font-size:.76rem;padding:0 12px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.btn-sm:hover{border-color:var(--accent)}
+.section-title{font-size:.69rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px}
+.card-list{display:flex;flex-direction:column;gap:7px;overflow-y:auto;flex:1}
+.cli{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:10px 12px;display:flex;align-items:center;gap:8px}
+.cli-texts{flex:1;min-width:0}
+.cli-q{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli-a{font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli-deck{font-size:.64rem;background:rgba(108,142,255,.1);color:var(--accent);padding:2px 7px;border-radius:7px;white-space:nowrap;flex-shrink:0}
+.cli-box{font-size:.64rem;padding:2px 7px;border-radius:7px;white-space:nowrap;flex-shrink:0;border:1px solid}
+.cli-del{background:none;border:none;color:var(--red);font-size:.95rem;cursor:pointer;opacity:.5;transition:opacity .2s;padding:4px 5px}
+.cli-del:hover{opacity:1}
+.reminder-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
+.reminder-step{margin-bottom:13px;display:flex;align-items:flex-start;gap:10px}
+.reminder-step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(108,142,255,.15);color:var(--accent);font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.reminder-step p{font-size:.83rem;line-height:1.7}
+.info-box{background:rgba(108,142,255,.07);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px}
+.loading-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin:0 2px;animation:blink 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.box-1{background:rgba(255,95,95,.1);color:var(--red);border-color:rgba(255,95,95,.25)!important}
+.box-2{background:rgba(255,171,66,.1);color:var(--orange);border-color:rgba(255,171,66,.25)!important}
+.box-3{background:rgba(255,228,77,.1);color:#ffe44d;border-color:rgba(255,228,77,.25)!important}
+.box-4{background:rgba(108,142,255,.1);color:var(--accent);border-color:rgba(108,142,255,.25)!important}
+.box-5{background:rgba(66,224,184,.1);color:var(--green);border-color:rgba(66,224,184,.25)!important}
+.speak-btn{background:rgba(108,142,255,0.12);border:1px solid rgba(108,142,255,0.25);border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;margin-top:12px;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.speak-btn:hover{background:rgba(108,142,255,0.25);transform:scale(1.1)}
+.speak-btn.speaking{background:rgba(66,224,184,0.2);border-color:var(--green);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 18px;border-radius:10px;font-size:.8rem;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⚡ فلش‌کارت</div>
+  <div class="hstats">
+    <div class="hstat"><div class="dot" style="background:var(--green)"></div><span id="stat-due">0</span> امروز</div>
+    <div class="hstat"><div class="dot" style="background:var(--accent)"></div><span id="stat-total">0</span> کل</div>
+  </div>
+</header>
+<nav>
+  <button class="nav-btn active" onclick="showScreen('study')">📖 مطالعه</button>
+  <button class="nav-btn" onclick="showScreen('add')">➕ اضافه</button>
+  <button class="nav-btn" onclick="showScreen('manage')">🗂 مدیریت</button>
+  <button class="nav-btn" onclick="showScreen('reminder')">⏰ یادآور</button>
+</nav>
+<div class="screen active" id="screen-study">
+  <div class="leitner-boxes" id="leitner-boxes"></div>
+  <div class="deck-bar" id="deck-bar"></div>
+  <div class="card-scene">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🎉</div>
+      <div style="font-size:1rem;font-weight:600">همه کارت‌های امروز تموم شد!</div>
+      <div style="font-size:.78rem">فردا ساعت ۱۱ یادت باشه 📚</div>
+    </div>
+    <div class="prog-wrap" id="prog-wrap" style="display:none"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="card-counter" id="card-counter" style="display:none"></div>
+    <div class="card-wrap" id="card-wrap" style="display:none" onclick="flipCard()">
+      <div class="card-inner" id="card-inner">
+        <div class="card-face card-front">
+          <div class="card-meta"><div class="card-tag" id="card-tag"></div><div class="card-box-badge" id="card-box-badge"></div></div>
+          <div class="card-label">سوال</div>
+          <div class="card-text" id="card-q"></div>
+          <div style="margin-top:8px;font-size:.62rem;color:var(--muted)">برای دیدن جواب بزن 👆</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-label">جواب</div>
+          <div class="card-text" id="card-a"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flip-hint" id="flip-hint" style="display:none">روی کارت بزن تا جواب ببینی</div>
+    <div class="ans-row" id="ans-row">
+      <button class="ans-btn ans-again" onclick="answer(0)"><span>دوباره</span><span class="ans-interval" id="int-again">جعبه ۱</span></button>
+      <button class="ans-btn ans-hard" onclick="answer(1)"><span>سخت</span><span class="ans-interval" id="int-hard"></span></button>
+      <button class="ans-btn ans-good" onclick="answer(2)"><span>خوب</span><span class="ans-interval" id="int-good"></span></button>
+      <button class="ans-btn ans-easy" onclick="answer(3)"><span>راحت</span><span class="ans-interval" id="int-easy"></span></button>
+    </div>
+  </div>
+</div>
+<div class="screen" id="screen-add">
+  <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column">
+    <div class="ai-box" style="margin-bottom:14px">
+      <div class="ai-title">📋 ورود دسته‌ای — هر خط یک طرف کارت</div>
+      <div class="form-group" style="margin-bottom:9px"><label>دسته‌بندی</label><select id="bulk-deck"></select></div>
+      <div class="form-group" style="margin-bottom:9px">
+        <label>کارت‌ها را بنویس (خط اول = سوال، خط دوم = جواب، و ...)</label>
+        <textarea id="bulk-input" style="min-height:140px;font-size:.82rem;line-height:1.8" placeholder="Apple&#10;سیب&#10;Book&#10;کتاب&#10;Car&#10;ماشین&#10;..."></textarea>
+      </div>
+      <div id="bulk-preview-info" style="display:none;font-size:.73rem;color:var(--green);margin-bottom:8px;padding:7px 10px;background:rgba(66,224,184,0.08);border-radius:8px;border:1px solid rgba(66,224,184,0.2)"></div>
+      <button class="btn-primary" style="background:linear-gradient(135deg,#42e0b8,#2ec49c);color:#0a2a20" onclick="saveBulk()">✅ ذخیره همه کارت‌ها</button>
+    </div>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">یا یک کارت دستی اضافه کن</div><div class="divider-line"></div></div>
+    <div class="form-group"><label>دسته‌بندی</label><select id="add-deck"></select>
+      <div class="row" style="margin-top:7px"><input id="new-deck-name" placeholder="دسته‌بندی جدید..."><button class="btn-sm" onclick="addDeck()">+ اضافه</button></div>
+    </div>
+    <div class="form-group"><label>سوال</label><textarea id="add-q" placeholder="سوال یا کلمه..."></textarea></div>
+    <div class="form-group"><label>جواب</label><textarea id="add-a" placeholder="جواب یا معنی..."></textarea></div>
+    <button class="btn-primary" onclick="addCard()">✅ ذخیره</button>
+    <div style="height:20px"></div>
+  </div>
+</div>
+<div class="screen" id="screen-manage">
+  <div class="section-title">همه کارت‌ها — <span id="manage-count">0</span> عدد</div>
+  <div class="card-list" id="card-list"></div>
+</div>
+<div class="screen" id="screen-reminder">
+  <div class="reminder-card">
+    <div style="font-size:.9rem;font-weight:700;margin-bottom:14px">⏰ یادآور روزانه ساعت ۱۱</div>
+    <div class="reminder-step"><div class="reminder-step-num">۱</div><p>اپ <b>یادآورها</b> (Reminders) رو باز کن</p></div>
+    <div class="reminder-step"><div class="reminder-step-num">۲</div><p>یادآور جدید با نام <b>«📚 وقت فلش‌کارت!»</b> بساز</p></div>
+    <div class="reminder-step"><div class="reminder-step-num">۳</div><p>ساعت رو <b>۱۱:۰۰</b> و تکرار رو روی <b>روزانه</b> بذار</p></div>
+    <div class="info-box">
+      <div style="font-size:.73rem;color:var(--accent);margin-bottom:8px">📦 سیستم لایتنر</div>
+      <div style="font-size:.77rem;color:var(--muted);line-height:1.9">
+        📦۱ قرمز → هر روز | 📦۲ نارنجی → هر ۲ روز<br>
+        📦۳ زرد → هر ۴ روز | 📦۴ آبی → هر ۸ روز<br>
+        📦۵ سبز → هر ۱۶ روز<br><br>
+        ✅ جواب درست → جعبه بالاتر<br>
+        ❌ جواب غلط → برمیگرده جعبه ۱
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<footer style="z-index:10;text-align:center;padding:14px 20px;border-top:1px solid var(--border);background:rgba(15,15,19,.9);font-size:.7rem;color:var(--muted);line-height:1.8">طراحی و تولید <span style="color:var(--accent);font-weight:700">بهنام مرندی</span><br>© ۱۴۰۴ — تمامی حقوق محفوظ است</footer>
+<script>
+const KEY="fc_v4";
+const INTERVALS=[0,1,2,4,8,16];
+const PRESET_CARDS=[
+{id:100,deck:"عربی روزمره",q:"Hello / سلام",a:"مرحباً",box:1,due:Date.now()},
+      {id:101,deck:"عربی روزمره",q:"Goodbye / خداحافظ",a:"مع السلامة",box:1,due:Date.now()},
+      {id:102,deck:"عربی روزمره",q:"Thank you / ممنون",a:"شكراً",box:1,due:Date.now()},
+      {id:103,deck:"عربی روزمره",q:"Please / لطفاً",a:"من فضلك",box:1,due:Date.now()},
+      {id:104,deck:"عربی روزمره",q:"Yes / بله",a:"نعم",box:1,due:Date.now()},
+      {id:105,deck:"عربی روزمره",q:"No / نه",a:"لا",box:1,due:Date.now()},
+      {id:106,deck:"عربی روزمره",q:"Sorry / ببخشید",a:"آسف / عفواً",box:1,due:Date.now()},
+      {id:107,deck:"عربی روزمره",q:"Welcome / خوش آمدید",a:"أهلاً وسهلاً",box:1,due:Date.now()},
+      {id:108,deck:"عربی روزمره",q:"Good morning / صبح بخیر",a:"صباح الخير",box:1,due:Date.now()},
+      {id:109,deck:"عربی روزمره",q:"Good evening / عصر بخیر",a:"مساء الخير",box:1,due:Date.now()},
+      {id:110,deck:"عربی روزمره",q:"Good night / شب بخیر",a:"تصبح على خير",box:1,due:Date.now()},
+      {id:111,deck:"عربی روزمره",q:"How are you? / حالت چطوره؟",a:"كيف حالك؟",box:1,due:Date.now()},
+      {id:112,deck:"عربی روزمره",q:"I'm fine / حالم خوبه",a:"أنا بخير",box:1,due:Date.now()},
+      {id:113,deck:"عربی روزمره",q:"What is your name? / اسمت چیه؟",a:"ما اسمك؟",box:1,due:Date.now()},
+      {id:114,deck:"عربی روزمره",q:"My name is... / اسمم ... هست",a:"اسمي...",box:1,due:Date.now()},
+      {id:115,deck:"عربی روزمره",q:"Nice to meet you / خوشحالم از آشناییت",a:"تشرفنا",box:1,due:Date.now()},
+      {id:116,deck:"عربی روزمره",q:"Where are you from? / اهل کجایی؟",a:"من أين أنت؟",box:1,due:Date.now()},
+      {id:117,deck:"عربی روزمره",q:"I don't understand / نمی‌فهمم",a:"لا أفهم",box:1,due:Date.now()},
+      {id:118,deck:"عربی روزمره",q:"Can you repeat? / میتونی تکرار کنی؟",a:"هل يمكنك التكرار؟",box:1,due:Date.now()},
+      {id:119,deck:"عربی روزمره",q:"Speak slowly / آروم‌تر صحبت کن",a:"تكلم ببطء",box:1,due:Date.now()},
+      {id:120,deck:"عربی روزمره",q:"Water / آب",a:"ماء",box:1,due:Date.now()},
+      {id:121,deck:"عربی روزمره",q:"Food / غذا",a:"طعام / أكل",box:1,due:Date.now()},
+      {id:122,deck:"عربی روزمره",q:"Bread / نان",a:"خبز",box:1,due:Date.now()},
+      {id:123,deck:"عربی روزمره",q:"Milk / شیر",a:"حليب",box:1,due:Date.now()},
+      {id:124,deck:"عربی روزمره",q:"Coffee / قهوه",a:"قهوة",box:1,due:Date.now()},
+      {id:125,deck:"عربی روزمره",q:"Tea / چای",a:"شاي",box:1,due:Date.now()},
+      {id:126,deck:"عربی روزمره",q:"Rice / برنج",a:"أرز",box:1,due:Date.now()},
+      {id:127,deck:"عربی روزمره",q:"Meat / گوشت",a:"لحم",box:1,due:Date.now()},
+      {id:128,deck:"عربی روزمره",q:"Fruit / میوه",a:"فاكهة",box:1,due:Date.now()},
+      {id:129,deck:"عربی روزمره",q:"Vegetable / سبزیجات",a:"خضروات",box:1,due:Date.now()},
+      {id:130,deck:"عربی روزمره",q:"House / خانه",a:"بيت / منزل",box:1,due:Date.now()},
+      {id:131,deck:"عربی روزمره",q:"Room / اتاق",a:"غرفة",box:1,due:Date.now()},
+      {id:132,deck:"عربی روزمره",q:"Door / در",a:"باب",box:1,due:Date.now()},
+      {id:133,deck:"عربی روزمره",q:"Window / پنجره",a:"نافذة",box:1,due:Date.now()},
+      {id:134,deck:"عربی روزمره",q:"Street / خیابان",a:"شارع",box:1,due:Date.now()},
+      {id:135,deck:"عربی روزمره",q:"City / شهر",a:"مدينة",box:1,due:Date.now()},
+      {id:136,deck:"عربی روزمره",q:"Country / کشور",a:"بلد / دولة",box:1,due:Date.now()},
+      {id:137,deck:"عربی روزمره",q:"School / مدرسه",a:"مدرسة",box:1,due:Date.now()},
+      {id:138,deck:"عربی روزمره",q:"Hospital / بیمارستان",a:"مستشفى",box:1,due:Date.now()},
+      {id:139,deck:"عربی روزمره",q:"Market / بازار",a:"سوق",box:1,due:Date.now()},
+      {id:140,deck:"عربی روزمره",q:"Father / پدر",a:"أب",box:1,due:Date.now()},
+      {id:141,deck:"عربی روزمره",q:"Mother / مادر",a:"أم",box:1,due:Date.now()},
+      {id:142,deck:"عربی روزمره",q:"Brother / برادر",a:"أخ",box:1,due:Date.now()},
+      {id:143,deck:"عربی روزمره",q:"Sister / خواهر",a:"أخت",box:1,due:Date.now()},
+      {id:144,deck:"عربی روزمره",q:"Son / پسر",a:"ابن",box:1,due:Date.now()},
+      {id:145,deck:"عربی روزمره",q:"Daughter / دختر",a:"بنت",box:1,due:Date.now()},
+      {id:146,deck:"عربی روزمره",q:"Friend / دوست",a:"صديق",box:1,due:Date.now()},
+      {id:147,deck:"عربی روزمره",q:"Teacher / معلم",a:"معلم / أستاذ",box:1,due:Date.now()},
+      {id:148,deck:"عربی روزمره",q:"Doctor / دکتر",a:"طبيب / دكتور",box:1,due:Date.now()},
+      {id:149,deck:"عربی روزمره",q:"I want / می‌خوام",a:"أريد",box:1,due:Date.now()},
+      {id:150,deck:"عربی روزمره",q:"I need / نیاز دارم",a:"أحتاج",box:1,due:Date.now()},
+      {id:151,deck:"عربی روزمره",q:"I love / دوست دارم",a:"أحب",box:1,due:Date.now()},
+      {id:152,deck:"عربی روزمره",q:"I know / می‌دونم",a:"أعرف",box:1,due:Date.now()},
+      {id:153,deck:"عربی روزمره",q:"I don't know / نمی‌دونم",a:"لا أعرف",box:1,due:Date.now()},
+      {id:154,deck:"عربی روزمره",q:"I have / دارم",a:"عندي / لدي",box:1,due:Date.now()},
+      {id:155,deck:"عربی روزمره",q:"I don't have / ندارم",a:"ليس عندي",box:1,due:Date.now()},
+      {id:156,deck:"عربی روزمره",q:"Go / برو",a:"اذهب",box:1,due:Date.now()},
+      {id:157,deck:"عربی روزمره",q:"Come / بیا",a:"تعال",box:1,due:Date.now()},
+      {id:158,deck:"عربی روزمره",q:"Stop / وایسا",a:"قف / توقف",box:1,due:Date.now()},
+      {id:159,deck:"عربی روزمره",q:"Help! / کمک!",a:"مساعدة! / النجدة!",box:1,due:Date.now()},
+      {id:160,deck:"عربی روزمره",q:"Where is...? / ... کجاست؟",a:"أين...؟",box:1,due:Date.now()},
+      {id:161,deck:"عربی روزمره",q:"How much? / چقدر؟",a:"كم؟ / بكم؟",box:1,due:Date.now()},
+      {id:162,deck:"عربی روزمره",q:"What time is it? / ساعت چنده؟",a:"كم الساعة؟",box:1,due:Date.now()},
+      {id:163,deck:"عربی روزمره",q:"Today / امروز",a:"اليوم",box:1,due:Date.now()},
+      {id:164,deck:"عربی روزمره",q:"Tomorrow / فردا",a:"غداً",box:1,due:Date.now()},
+      {id:165,deck:"عربی روزمره",q:"Yesterday / دیروز",a:"أمس",box:1,due:Date.now()},
+      {id:166,deck:"عربی روزمره",q:"Now / الان",a:"الآن",box:1,due:Date.now()},
+      {id:167,deck:"عربی روزمره",q:"Later / بعداً",a:"لاحقاً / بعدين",box:1,due:Date.now()},
+      {id:168,deck:"عربی روزمره",q:"Big / بزرگ",a:"كبير",box:1,due:Date.now()},
+      {id:169,deck:"عربی روزمره",q:"Small / کوچک",a:"صغير",box:1,due:Date.now()},
+      {id:170,deck:"عربی روزمره",q:"Good / خوب",a:"جيد / كويس",box:1,due:Date.now()},
+      {id:171,deck:"عربی روزمره",q:"Bad / بد",a:"سيئ",box:1,due:Date.now()},
+      {id:172,deck:"عربی روزمره",q:"Hot / گرم",a:"حار",box:1,due:Date.now()},
+      {id:173,deck:"عربی روزمره",q:"Cold / سرد",a:"بارد",box:1,due:Date.now()},
+      {id:174,deck:"عربی روزمره",q:"New / جدید",a:"جديد",box:1,due:Date.now()},
+      {id:175,deck:"عربی روزمره",q:"Old / قدیمی",a:"قديم",box:1,due:Date.now()},
+      {id:176,deck:"عربی روزمره",q:"Fast / سریع",a:"سريع",box:1,due:Date.now()},
+      {id:177,deck:"عربی روزمره",q:"Slow / آهسته",a:"بطيء",box:1,due:Date.now()},
+      {id:178,deck:"عربی روزمره",q:"Easy / آسان",a:"سهل",box:1,due:Date.now()},
+      {id:179,deck:"عربی روزمره",q:"Difficult / سخت",a:"صعب",box:1,due:Date.now()},
+      {id:180,deck:"عربی روزمره",q:"Beautiful / زیبا",a:"جميل",box:1,due:Date.now()},
+      {id:181,deck:"عربی روزمره",q:"Happy / شاد",a:"سعيد / مبسوط",box:1,due:Date.now()},
+      {id:182,deck:"عربی روزمره",q:"Sad / غمگین",a:"حزين",box:1,due:Date.now()},
+      {id:183,deck:"عربی روزمره",q:"Tired / خسته",a:"تعبان / متعب",box:1,due:Date.now()},
+      {id:184,deck:"عربی روزمره",q:"Hungry / گرسنه",a:"جائع",box:1,due:Date.now()},
+      {id:185,deck:"عربی روزمره",q:"Thirsty / تشنه",a:"عطشان",box:1,due:Date.now()},
+      {id:186,deck:"عربی روزمره",q:"Sick / مریض",a:"مريض",box:1,due:Date.now()},
+      {id:187,deck:"عربی روزمره",q:"One / یک",a:"واحد",box:1,due:Date.now()},
+      {id:188,deck:"عربی روزمره",q:"Two / دو",a:"اثنان",box:1,due:Date.now()},
+      {id:189,deck:"عربی روزمره",q:"Three / سه",a:"ثلاثة",box:1,due:Date.now()},
+      {id:190,deck:"عربی روزمره",q:"Ten / ده",a:"عشرة",box:1,due:Date.now()},
+      {id:191,deck:"عربی روزمره",q:"Hundred / صد",a:"مئة",box:1,due:Date.now()},
+      {id:192,deck:"عربی روزمره",q:"Car / ماشین",a:"سيارة",box:1,due:Date.now()},
+      {id:193,deck:"عربی روزمره",q:"Plane / هواپیما",a:"طائرة",box:1,due:Date.now()},
+      {id:194,deck:"عربی روزمره",q:"Train / قطار",a:"قطار",box:1,due:Date.now()},
+      {id:195,deck:"عربی روزمره",q:"Book / کتاب",a:"كتاب",box:1,due:Date.now()},
+      {id:196,deck:"عربی روزمره",q:"Phone / گوشی",a:"هاتف / تليفون",box:1,due:Date.now()},
+      {id:197,deck:"عربی روزمره",q:"Money / پول",a:"مال / فلوس",box:1,due:Date.now()},
+      {id:198,deck:"عربی روزمره",q:"Work / کار",a:"عمل / شغل",box:1,due:Date.now()},
+      {id:199,deck:"عربی روزمره",q:"Time / وقت",a:"وقت / زمن",box:1,due:Date.now()},
+      {id:200,deck:"عربی روزمره",q:"Day / روز",a:"يوم",box:1,due:Date.now()},
+      {id:201,deck:"عربی روزمره",q:"Night / شب",a:"ليل",box:1,due:Date.now()},
+      {id:202,deck:"عربی روزمره",q:"In sha Allah / ان‌شاءالله",a:"إن شاء الله — اگه خدا بخواد",box:1,due:Date.now()},
+      {id:203,deck:"عربی روزمره",q:"Alhamdulillah / الحمدلله",a:"الحمد لله — خدا رو شکر",box:1,due:Date.now()},
+      {id:204,deck:"عربی روزمره",q:"MashaAllah / ماشاءالله",a:"ما شاء الله — آفرین",box:1,due:Date.now()},
+      {id:205,deck:"عربی روزمره",q:"Bismillah / بسم‌الله",a:"بسم الله — به نام خدا",box:1,due:Date.now()},
+      {id:206,deck:"عربی روزمره",q:"Assalamu Alaykum",a:"السلام عليكم — سلام و درود",box:1,due:Date.now()},
+      {id:207,deck:"عربی روزمره",q:"Wa Alaykum Assalam",a:"وعليكم السلام — جواب سلام",box:1,due:Date.now()},
+      {id:208,deck:"عربی روزمره",q:"JazakAllah / جزاک‌الله",a:"جزاك الله خيراً — خدا خیرت بده",box:1,due:Date.now()},
+      {id:209,deck:"عربی روزمره",q:"Yalla! / یالله!",a:"يلا! — بریم! زود باش!",box:1,due:Date.now()},
+      {id:210,deck:"عربی روزمره",q:"Habibi / حبیبی",a:"حبيبي — عزیزم / دوستم",box:1,due:Date.now()},
+      {id:211,deck:"عربی روزمره",q:"Tamam / تمام",a:"تمام — اوکی / درسته",box:1,due:Date.now()},
+      {id:212,deck:"انگلیسی روزمره",q:"Apple",a:"سیب 🍎",box:1,due:Date.now()},
+      {id:213,deck:"انگلیسی روزمره",q:"Book",a:"کتاب 📚",box:1,due:Date.now()},
+      {id:214,deck:"انگلیسی روزمره",q:"Car",a:"ماشین 🚗",box:1,due:Date.now()},
+      {id:215,deck:"انگلیسی روزمره",q:"Water",a:"آب 💧",box:1,due:Date.now()},
+      {id:216,deck:"انگلیسی روزمره",q:"House",a:"خانه 🏠",box:1,due:Date.now()},
+      {id:217,deck:"انگلیسی روزمره",q:"Friend",a:"دوست 👫",box:1,due:Date.now()},
+      {id:218,deck:"انگلیسی روزمره",q:"Time",a:"زمان / وقت ⏰",box:1,due:Date.now()},
+      {id:219,deck:"انگلیسی روزمره",q:"Money",a:"پول 💰",box:1,due:Date.now()},
+      {id:220,deck:"انگلیسی روزمره",q:"Work / Job",a:"کار / شغل",box:1,due:Date.now()},
+      {id:221,deck:"انگلیسی روزمره",q:"School",a:"مدرسه 🏫",box:1,due:Date.now()},
+      {id:222,deck:"انگلیسی روزمره",q:"Beautiful",a:"زیبا / قشنگ",box:1,due:Date.now()},
+      {id:223,deck:"انگلیسی روزمره",q:"Important",a:"مهم",box:1,due:Date.now()},
+      {id:224,deck:"انگلیسی روزمره",q:"Understand",a:"فهمیدن",box:1,due:Date.now()},
+      {id:225,deck:"انگلیسی روزمره",q:"Remember",a:"یادآوردن / به خاطر سپردن",box:1,due:Date.now()},
+      {id:226,deck:"انگلیسی روزمره",q:"Forget",a:"فراموش کردن",box:1,due:Date.now()},
+      {id:227,deck:"انگلیسی روزمره",q:"Learn",a:"یاد گرفتن",box:1,due:Date.now()},
+      {id:228,deck:"انگلیسی روزمره",q:"Teach",a:"یاد دادن / تدریس کردن",box:1,due:Date.now()},
+      {id:229,deck:"انگلیسی روزمره",q:"Help",a:"کمک کردن",box:1,due:Date.now()},
+      {id:230,deck:"انگلیسی روزمره",q:"Buy",a:"خریدن",box:1,due:Date.now()},
+      {id:231,deck:"انگلیسی روزمره",q:"Sell",a:"فروختن",box:1,due:Date.now()},
+      {id:232,deck:"انگلیسی روزمره",q:"Eat",a:"خوردن",box:1,due:Date.now()},
+      {id:233,deck:"انگلیسی روزمره",q:"Drink",a:"نوشیدن",box:1,due:Date.now()},
+      {id:234,deck:"انگلیسی روزمره",q:"Sleep",a:"خوابیدن",box:1,due:Date.now()},
+      {id:235,deck:"انگلیسی روزمره",q:"Wake up",a:"بیدار شدن",box:1,due:Date.now()},
+      {id:236,deck:"انگلیسی روزمره",q:"Go",a:"رفتن",box:1,due:Date.now()},
+      {id:237,deck:"انگلیسی روزمره",q:"Come",a:"آمدن",box:1,due:Date.now()},
+      {id:238,deck:"انگلیسی روزمره",q:"See",a:"دیدن",box:1,due:Date.now()},
+      {id:239,deck:"انگلیسی روزمره",q:"Hear",a:"شنیدن",box:1,due:Date.now()},
+      {id:240,deck:"انگلیسی روزمره",q:"Speak / Talk",a:"صحبت کردن / حرف زدن",box:1,due:Date.now()},
+      {id:241,deck:"انگلیسی روزمره",q:"Listen",a:"گوش دادن",box:1,due:Date.now()},
+      {id:242,deck:"انگلیسی روزمره",q:"Read",a:"خواندن",box:1,due:Date.now()},
+      {id:243,deck:"انگلیسی روزمره",q:"Write",a:"نوشتن",box:1,due:Date.now()},
+      {id:244,deck:"انگلیسی روزمره",q:"Think",a:"فکر کردن",box:1,due:Date.now()},
+      {id:245,deck:"انگلیسی روزمره",q:"Know",a:"دانستن / بلد بودن",box:1,due:Date.now()},
+      {id:246,deck:"انگلیسی روزمره",q:"Want",a:"خواستن",box:1,due:Date.now()},
+      {id:247,deck:"انگلیسی روزمره",q:"Need",a:"نیاز داشتن",box:1,due:Date.now()},
+      {id:248,deck:"انگلیسی روزمره",q:"Like",a:"دوست داشتن",box:1,due:Date.now()},
+      {id:249,deck:"انگلیسی روزمره",q:"Love",a:"عاشق بودن / خیلی دوست داشتن",box:1,due:Date.now()},
+      {id:250,deck:"انگلیسی روزمره",q:"Hate",a:"متنفر بودن",box:1,due:Date.now()},
+      {id:251,deck:"انگلیسی روزمره",q:"Happy",a:"شاد / خوشحال",box:1,due:Date.now()},
+      {id:252,deck:"انگلیسی روزمره",q:"Sad",a:"غمگین",box:1,due:Date.now()},
+      {id:253,deck:"انگلیسی روزمره",q:"Angry",a:"عصبانی",box:1,due:Date.now()},
+      {id:254,deck:"انگلیسی روزمره",q:"Tired",a:"خسته",box:1,due:Date.now()},
+      {id:255,deck:"انگلیسی روزمره",q:"Busy",a:"گرفتار / مشغول",box:1,due:Date.now()},
+      {id:256,deck:"انگلیسی روزمره",q:"Free",a:"آزاد / بیکار",box:1,due:Date.now()},
+      {id:257,deck:"انگلیسی روزمره",q:"Early",a:"زود / زودتر",box:1,due:Date.now()},
+      {id:258,deck:"انگلیسی روزمره",q:"Late",a:"دیر / دیروقت",box:1,due:Date.now()},
+      {id:259,deck:"انگلیسی روزمره",q:"Always",a:"همیشه",box:1,due:Date.now()},
+      {id:260,deck:"انگلیسی روزمره",q:"Never",a:"هرگز / هیچ‌وقت",box:1,due:Date.now()},
+      {id:261,deck:"انگلیسی روزمره",q:"Sometimes",a:"گاهی / بعضی‌وقت‌ها",box:1,due:Date.now()},
+      {id:262,deck:"انگلیسی روزمره",q:"Often",a:"اغلب / زیاد",box:1,due:Date.now()},
+      {id:263,deck:"انگلیسی روزمره",q:"Maybe",a:"شاید",box:1,due:Date.now()},
+      {id:264,deck:"انگلیسی روزمره",q:"Of course",a:"البته / حتماً",box:1,due:Date.now()},
+      {id:265,deck:"انگلیسی روزمره",q:"Exactly",a:"دقیقاً",box:1,due:Date.now()},
+      {id:266,deck:"انگلیسی روزمره",q:"Actually",a:"در واقع / اصلاً",box:1,due:Date.now()},
+      {id:267,deck:"انگلیسی روزمره",q:"However",a:"اما / با این حال",box:1,due:Date.now()},
+      {id:268,deck:"انگلیسی روزمره",q:"Although",a:"اگرچه / هرچند",box:1,due:Date.now()},
+      {id:269,deck:"انگلیسی روزمره",q:"Therefore",a:"بنابراین / پس",box:1,due:Date.now()},
+      {id:270,deck:"انگلیسی روزمره",q:"Because",a:"چون / زیرا",box:1,due:Date.now()},
+      {id:271,deck:"انگلیسی روزمره",q:"Excuse me",a:"ببخشید (برای جلب توجه)",box:1,due:Date.now()},
+      {id:272,deck:"انگلیسی روزمره",q:"I'm sorry",a:"متأسفم / ببخشید (عذرخواهی)",box:1,due:Date.now()},
+      {id:273,deck:"انگلیسی روزمره",q:"No problem",a:"مشکلی نیست / خواهش می‌کنم",box:1,due:Date.now()},
+      {id:274,deck:"انگلیسی روزمره",q:"Never mind",a:"مهم نیست / ولش کن",box:1,due:Date.now()},
+      {id:275,deck:"انگلیسی روزمره",q:"Let's go",a:"بریم",box:1,due:Date.now()},
+      {id:276,deck:"انگلیسی روزمره",q:"Take care",a:"مراقب خودت باش",box:1,due:Date.now()},
+      {id:277,deck:"انگلیسی روزمره",q:"Good luck",a:"موفق باشی",box:1,due:Date.now()},
+      {id:278,deck:"انگلیسی روزمره",q:"Well done",a:"آفرین / خوب بود",box:1,due:Date.now()},
+      {id:279,deck:"انگلیسی روزمره",q:"By the way",a:"راستی / ضمناً",box:1,due:Date.now()},
+      {id:280,deck:"انگلیسی روزمره",q:"As soon as possible (ASAP)",a:"در اسرع وقت / هر چه زودتر",box:1,due:Date.now()},
+      {id:281,deck:"انگلیسی روزمره",q:"In my opinion",a:"به نظر من",box:1,due:Date.now()},
+      {id:282,deck:"انگلیسی روزمره",q:"On the other hand",a:"از طرف دیگه",box:1,due:Date.now()},
+      {id:283,deck:"انگلیسی روزمره",q:"For example",a:"برای مثال",box:1,due:Date.now()},
+      {id:284,deck:"انگلیسی روزمره",q:"In general",a:"به طور کلی",box:1,due:Date.now()},
+      {id:285,deck:"انگلیسی روزمره",q:"At least",a:"حداقل",box:1,due:Date.now()},
+      {id:286,deck:"انگلیسی روزمره",q:"At last / Finally",a:"بالاخره / سرانجام",box:1,due:Date.now()},
+      {id:287,deck:"انگلیسی روزمره",q:"Right now",a:"همین الان",box:1,due:Date.now()},
+      {id:288,deck:"انگلیسی روزمره",q:"As well as",a:"علاوه بر / همچنین",box:1,due:Date.now()},
+      {id:289,deck:"انگلیسی روزمره",q:"I mean",a:"منظورم اینه",box:1,due:Date.now()},
+      {id:290,deck:"انگلیسی روزمره",q:"You know",a:"می‌دونی که / یعنی",box:1,due:Date.now()},
+      {id:291,deck:"انگلیسی روزمره",q:"Kind of / Sort of",a:"یه جورایی / تقریباً",box:1,due:Date.now()},
+      {id:292,deck:"انگلیسی روزمره",q:"What's up?",a:"چه خبر؟ / اوضاع چطوره؟",box:1,due:Date.now()},
+      {id:293,deck:"انگلیسی روزمره",q:"How's it going?",a:"چطوری؟ / اوضاع چطوره؟",box:1,due:Date.now()},
+      {id:294,deck:"انگلیسی روزمره",q:"Long time no see",a:"مدتی ندیدمت",box:1,due:Date.now()},
+      {id:295,deck:"انگلیسی روزمره",q:"I'll be right back",a:"الان برمی‌گردم",box:1,due:Date.now()},
+      {id:296,deck:"انگلیسی روزمره",q:"I'm on my way",a:"دارم میام",box:1,due:Date.now()},
+      {id:297,deck:"انگلیسی روزمره",q:"It's up to you",a:"به خودت بستگی داره",box:1,due:Date.now()},
+      {id:298,deck:"انگلیسی روزمره",q:"I agree",a:"موافقم",box:1,due:Date.now()},
+      {id:299,deck:"انگلیسی روزمره",q:"I disagree",a:"مخالفم",box:1,due:Date.now()},
+      {id:300,deck:"انگلیسی روزمره",q:"That's right",a:"درسته / همینطوره",box:1,due:Date.now()},
+      {id:301,deck:"انگلیسی روزمره",q:"That's wrong",a:"اشتباهه",box:1,due:Date.now()},
+      {id:302,deck:"انگلیسی روزمره",q:"Hold on",a:"صبر کن / یه لحظه",box:1,due:Date.now()},
+      {id:303,deck:"انگلیسی روزمره",q:"Hurry up",a:"عجله کن / بجنب",box:1,due:Date.now()},
+      {id:304,deck:"انگلیسی روزمره",q:"Calm down",a:"آروم باش",box:1,due:Date.now()},
+      {id:305,deck:"انگلیسی روزمره",q:"Don't worry",a:"نگران نباش",box:1,due:Date.now()},
+      {id:306,deck:"انگلیسی روزمره",q:"Trust me",a:"به من اعتماد کن",box:1,due:Date.now()},
+      {id:307,deck:"انگلیسی روزمره",q:"Be careful",a:"مراقب باش",box:1,due:Date.now()},
+      {id:308,deck:"انگلیسی روزمره",q:"Make up your mind",a:"تصمیم بگیر",box:1,due:Date.now()},
+      {id:309,deck:"انگلیسی روزمره",q:"Keep in touch",a:"در تماس باش",box:1,due:Date.now()},
+      {id:310,deck:"انگلیسی روزمره",q:"Break a leg",a:"موفق باشی (برای نمایش/امتحان)",box:1,due:Date.now()},
+      {id:311,deck:"انگلیسی روزمره",q:"Hit the road",a:"راه افتادن / حرکت کردن",box:1,due:Date.now()},
+      {id:312,deck:"انگلیسی روزمره",q:"Give it a shot",a:"امتحانش کن",box:1,due:Date.now()},
+      {id:313,deck:"انگلیسی روزمره",q:"It doesn't matter",a:"مهم نیست",box:1,due:Date.now()},
+      {id:314,deck:"انگلیسی روزمره",q:"What do you mean?",a:"منظورت چیه؟",box:1,due:Date.now()},
+      {id:315,deck:"انگلیسی روزمره",q:"Can I help you?",a:"می‌تونم کمکت کنم؟",box:1,due:Date.now()},
+      {id:316,deck:"انگلیسی روزمره",q:"Nice job!",a:"آفرین! / کارت درسته!",box:1,due:Date.now()},
+      {id:317,deck:"انگلیسی روزمره",q:"My bad",a:"تقصیر منه / اشتباه من بود",box:1,due:Date.now()},
+      {id:318,deck:"انگلیسی روزمره",q:"Seriously?",a:"جدی میگی؟",box:1,due:Date.now()},
+      {id:319,deck:"انگلیسی روزمره",q:"No way!",a:"محاله! / ممکن نیست!",box:1,due:Date.now()},
+      {id:320,deck:"انگلیسی روزمره",q:"Absolutely",a:"کاملاً / صد در صد",box:1,due:Date.now()},
+      {id:321,deck:"انگلیسی روزمره",q:"Basically",a:"اساساً / در اصل",box:1,due:Date.now()},
+      {id:322,deck:"انگلیسی روزمره",q:"Honestly",a:"صادقانه بگم",box:1,due:Date.now()},
+      {id:323,deck:"انگلیسی روزمره",q:"Apparently",a:"ظاهراً",box:1,due:Date.now()},
+      {id:324,deck:"انگلیسی روزمره",q:"Fortunately",a:"خوشبختانه",box:1,due:Date.now()},
+      {id:325,deck:"انگلیسی روزمره",q:"Unfortunately",a:"متأسفانه",box:1,due:Date.now()}
+];
+
+function load(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(KEY));
+    if(saved){
+      // merge preset cards that don't exist yet
+      const existingIds=new Set(saved.cards.map(c=>c.id));
+      const newPreset=PRESET_CARDS.filter(c=>!existingIds.has(c.id));
+      if(newPreset.length>0){
+        saved.cards=[...saved.cards,...newPreset];
+        // add new decks
+        newPreset.forEach(c=>{if(!saved.decks.includes(c.deck))saved.decks.push(c.deck)});
+        localStorage.setItem(KEY,JSON.stringify(saved));
+      }
+      return saved;
+    }
+  }catch(e){}
+  return def();
+}
+
+function def(){
+  const decks=[...new Set(PRESET_CARDS.map(c=>c.deck))];
+  return{decks,cards:PRESET_CARDS.map(c=>({...c,due:Date.now()}))};
+}
+
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+
+let data=load(),activeDeck="همه",queue=[],cidx=0,flipped=false;
+
+function showScreen(n){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("screen-"+n).classList.add("active");
+  ["study","add","manage","reminder"].forEach((s,i)=>{if(s===n)document.querySelectorAll(".nav-btn")[i].classList.add("active")});
+  if(n==="study")renderStudy();
+  if(n==="add")renderForms();
+  if(n==="manage")renderManage();
+}
+
+function bclass(b){return"box-"+(b||1)}
+
+function renderLeitner(){
+  const counts=[0,0,0,0,0];
+  data.cards.forEach(c=>counts[(c.box||1)-1]++);
+  document.getElementById("leitner-boxes").innerHTML=[1,2,3,4,5].map((b,i)=>`
+    <div class="lbox lbox-${b}"><div class="lbox-num">📦${b}</div><div class="lbox-label">${["روزانه","۲روز","۴روز","۸روز","۱۶روز"][i]}</div><div class="lbox-count">${counts[i]}</div></div>`).join("");
+}
+
+function getDue(){
+  const n=Date.now();
+  let c=data.cards.filter(x=>(x.due||0)<=n);
+  if(activeDeck!=="همه")c=c.filter(x=>x.deck===activeDeck);
+  return c;
+}
+
+function renderStudy(){renderLeitner();renderDeckBar();updateStats();queue=getDue();cidx=0;showCard()}
+
+function renderDeckBar(){
+  document.getElementById("deck-bar").innerHTML=["همه",...data.decks].map(d=>
+    `<button class="deck-chip ${d===activeDeck?"active":""}" onclick="selectDeck('${d.replace(/'/g,"\'")}'">${d}</button>`).join("");
+}
+
+function selectDeck(d){activeDeck=d;renderStudy()}
+
+function showCard(){
+  const empty=document.getElementById("empty-state");
+  const wrap=document.getElementById("card-wrap");
+  const pw=document.getElementById("prog-wrap");
+  const cc=document.getElementById("card-counter");
+  const hint=document.getElementById("flip-hint");
+  const ar=document.getElementById("ans-row");
+  if(queue.length===0){
+    empty.style.display="flex";wrap.style.display="none";
+    pw.style.display="none";cc.style.display="none";
+    hint.style.display="none";ar.classList.remove("visible");return;
+  }
+  empty.style.display="none";wrap.style.display="block";
+  pw.style.display="block";cc.style.display="block";hint.style.display="block";
+  const card=queue[cidx];
+  document.getElementById("card-q").textContent=card.q;
+  document.getElementById("card-a").textContent=card.a;
+  document.getElementById("card-tag").textContent=card.deck;
+  const bb=document.getElementById("card-box-badge");
+  bb.textContent="📦"+(card.box||1);bb.className="card-box-badge "+bclass(card.box);
+  const all=activeDeck==="همه"?data.cards:data.cards.filter(c=>c.deck===activeDeck);
+  const done=all.length-getDue().length;
+  document.getElementById("prog-fill").style.width=(all.length?(done/all.length*100):0)+"%";
+  cc.textContent=`${cidx+1} از ${queue.length} کارت امروز`;
+  flipped=false;
+  const inner=document.getElementById("card-inner");
+  inner.style.transition='none';
+  inner.classList.remove("flipped");
+  // force reflow then restore transition
+  inner.offsetHeight;
+  inner.style.transition='';
+  ar.classList.remove("visible");
+  const b=card.box||1;
+  document.getElementById("int-again").textContent="جعبه ۱";
+  document.getElementById("int-hard").textContent=b>1?`جعبه ${b-1}`:"جعبه ۱";
+  document.getElementById("int-good").textContent=b<5?`جعبه ${b+1}`:"جعبه ۵ ✓";
+  document.getElementById("int-easy").textContent=b<5?`جعبه ${Math.min(5,b+2)}`:"جعبه ۵ ✓";
+}
+
+function flipCard(){
+  if(flipped)return;flipped=true;
+  document.getElementById("card-inner").classList.add("flipped");
+  document.getElementById("flip-hint").style.display="none";
+  document.getElementById("ans-row").classList.add("visible");
+}
+
+function answer(q){
+  const card=queue[cidx];
+  const idx=data.cards.findIndex(c=>c.id===card.id);
+  if(idx===-1)return;
+  const c=data.cards[idx];
+  const DAY=86400000,now=Date.now();
+  if(q===0){c.box=1;c.due=now+60000}
+  else if(q===1){c.box=Math.max(1,(c.box||1)-1);c.due=now+INTERVALS[c.box]*DAY}
+  else if(q===2){c.box=Math.min(5,(c.box||1)+1);c.due=now+INTERVALS[c.box]*DAY}
+  else{c.box=Math.min(5,(c.box||1)+2);c.due=now+INTERVALS[c.box]*DAY}
+  save();renderLeitner();
+  if(q===0){queue.splice(cidx,1);queue.push(card);if(cidx>=queue.length)cidx=0}
+  else{queue.splice(cidx,1);if(cidx>=queue.length)cidx=Math.max(0,queue.length-1)}
+  updateStats();showCard();
+}
+
+function renderForms(){
+  ["add-deck","bulk-deck"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=data.decks.map(d=>`<option value="${d}">${d}</option>`).join("");
+  });
+}
+
+
+function saveBulk(){
+  const raw=document.getElementById("bulk-input").value;
+  const deck=document.getElementById("bulk-deck").value||data.decks[0];
+  const lines=raw.split("\n").map(l=>l.trim()).filter(l=>l);
+  if(lines.length<2){toast("⚠️ حداقل یک جفت سوال و جواب بنویس");return}
+  let added=0;
+  for(let i=0;i+1<lines.length;i+=2){
+    data.cards.push({id:Date.now()+Math.random(),deck,q:lines[i],a:lines[i+1],box:1,due:Date.now()});
+    added++;
+  }
+  save();updateStats();
+  document.getElementById("bulk-input").value="";
+  document.getElementById("bulk-preview-info").style.display="none";
+  toast("✅ "+added+" کارت ذخیره شد!");
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  const bi=document.getElementById("bulk-input");
+  const info=document.getElementById("bulk-preview-info");
+  if(bi){bi.addEventListener("input",()=>{
+    const lines=bi.value.split("\n").map(l=>l.trim()).filter(l=>l);
+    const count=Math.floor(lines.length/2);
+    if(count>0){info.style.display="block";info.textContent="✅ "+count+" کارت آماده ذخیره شدن";}else{info.style.display="none";}
+  });}
+});
+function addDeck(){
+  const n=document.getElementById("new-deck-name").value.trim();
+  if(!n)return;
+  if(data.decks.includes(n)){toast("این دسته قبلاً هست");return}
+  data.decks.push(n);save();
+  document.getElementById("new-deck-name").value="";
+  renderForms();toast("✅ دسته اضافه شد");
+}
+
+function addCard(){
+  const q=document.getElementById("add-q").value.trim();
+  const a=document.getElementById("add-a").value.trim();
+  const deck=document.getElementById("add-deck").value;
+  if(!q||!a){toast("⚠️ سوال و جواب رو پر کن");return}
+  data.cards.push({id:Date.now(),deck,q,a,box:1,due:Date.now()});
+  save();document.getElementById("add-q").value="";document.getElementById("add-a").value="";
+  updateStats();toast("✅ کارت ذخیره شد!");
+}
+
+function renderManage(){
+  document.getElementById("manage-count").textContent=data.cards.length;
+  const list=document.getElementById("card-list");
+  if(!data.cards.length){list.innerHTML="<div style=\"color:var(--muted);text-align:center;padding:30px\">هنوز کارتی نداری</div>";return}
+  list.innerHTML=data.cards.map(c=>`
+    <div class="cli">
+      <div class="cli-texts"><div class="cli-q">${c.q}</div><div class="cli-a">${c.a}</div></div>
+      <div class="cli-deck">${c.deck}</div>
+      <div class="cli-box ${bclass(c.box||1)}">📦${c.box||1}</div>
+      <button class="cli-del" onclick="delCard(${c.id})">🗑</button>
+    </div>`).join("");
+}
+
+function delCard(id){
+  data.cards=data.cards.filter(c=>c.id!==id);
+  save();renderManage();updateStats();toast("🗑 حذف شد");
+}
+
+function updateStats(){
+  document.getElementById("stat-total").textContent=data.cards.length;
+  document.getElementById("stat-due").textContent=data.cards.filter(c=>(c.due||0)<=Date.now()).length;
+}
+
+let tt;
+function toast(msg){
+  const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
+  clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2200);
+}
+
+// ── SPEECH ───────────────────────────────────────────────
+function detectLang(text){
+  if(/[\u0600-\u06FF]/.test(text)){
+    // Arabic or Persian — distinguish by common Persian letters
+    if(/[پچژگک]/.test(text)) return 'fa-IR';
+    return 'ar-SA';
+  }
+  return 'en-US';
+}
+
+function speakCard(e, side){
+  e.stopPropagation(); // don't flip card
+  const text = document.getElementById('card-'+side).textContent;
+  if(!text) return;
+
+  window.speechSynthesis.cancel();
+
+  const btn = document.getElementById('speak-'+side);
+  btn.classList.add('speaking');
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = detectLang(text);
+  utter.rate = 0.9;
+  utter.onend = () => btn.classList.remove('speaking');
+  utter.onerror = () => btn.classList.remove('speaking');
+
+  window.speechSynthesis.speak(utter);
+}
+
+renderStudy();renderForms();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
