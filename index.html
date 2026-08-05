@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="فلش‌کارت">
+<meta name="theme-color" content="#0f0f13">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<title>فلش‌کارت</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f13;--surface:#1a1a24;--surface2:#22222f;--accent:#6c8eff;--accent2:#ff6c8e;--text:#e8e8f0;--muted:#7878a0;--border:rgba(108,142,255,0.15);--green:#42e0b8;--red:#ff5f5f;--orange:#ffab42}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Vazirmatn",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+body::before{content:"";position:fixed;top:-30%;right:-10%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(108,142,255,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+header{z-index:10;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(15,15,19,.95);backdrop-filter:blur(10px)}
+.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hstats{display:flex;gap:8px}
+.hstat{font-size:.73rem;color:var(--muted);background:var(--surface);padding:4px 10px;border-radius:20px;border:1px solid var(--border);display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%}
+nav{z-index:10;display:flex;gap:2px;padding:10px 12px 0;background:rgba(15,15,19,.9);border-bottom:1px solid var(--border);overflow-x:auto}
+.nav-btn{background:none;border:none;color:var(--muted);font-family:"Vazirmatn",sans-serif;font-size:.8rem;padding:8px 12px;border-radius:8px 8px 0 0;cursor:pointer;transition:all .2s;position:relative;white-space:nowrap}
+.nav-btn.active{color:var(--accent);background:var(--surface)}
+.nav-btn.active::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
+.screen{display:none;flex:1;padding:16px;flex-direction:column;position:relative;z-index:1}
+.screen.active{display:flex}
+.leitner-boxes{display:flex;gap:5px;margin-bottom:14px}
+.lbox{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 6px;text-align:center}
+.lbox-num{font-size:.85rem;font-weight:700}
+.lbox-label{font-size:.56rem;color:var(--muted);margin-top:1px}
+.lbox-count{font-size:.7rem;margin-top:3px}
+.lbox-1 .lbox-num{color:var(--red)}.lbox-2 .lbox-num{color:var(--orange)}.lbox-3 .lbox-num{color:#ffe44d}.lbox-4 .lbox-num{color:var(--accent)}.lbox-5 .lbox-num{color:var(--green)}
+.deck-bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.deck-chip{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:"Vazirmatn",sans-serif;font-size:.75rem;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .2s}
+.deck-chip.active{background:rgba(108,142,255,.12);border-color:var(--accent);color:var(--accent)}
+.card-scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.prog-wrap{width:100%;max-width:480px;height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s ease}
+.card-counter{font-size:.74rem;color:var(--muted);text-align:center}
+.card-wrap{width:100%;max-width:480px;height:255px;perspective:1200px;cursor:pointer}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;width:100%;height:100%;border-radius:20px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.card-front{background:#1e1e2e;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.card-back{background:#12202e;border:1px solid rgba(108,142,255,.25);box-shadow:0 8px 40px rgba(108,142,255,.1);transform:rotateY(180deg)}
+.card-label{font-size:.64rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:11px}
+.card-text{font-size:1.3rem;font-weight:600;line-height:1.6}
+.card-back .card-text{color:#a8d8ff}
+.card-meta{position:absolute;top:11px;right:12px;display:flex;gap:5px;align-items:center}
+.card-tag{font-size:.64rem;background:rgba(108,142,255,.1);color:var(--accent);padding:2px 7px;border-radius:7px;border:1px solid var(--border)}
+.card-box-badge{font-size:.64rem;padding:2px 7px;border-radius:7px;border:1px solid}
+.flip-hint{font-size:.72rem;color:var(--muted)}
+.ans-row{display:flex;gap:7px;width:100%;max-width:480px;opacity:0;pointer-events:none;transform:translateY(8px);transition:all .3s}
+.ans-row.visible{opacity:1;pointer-events:all;transform:translateY(0)}
+.ans-btn{flex:1;border:none;border-radius:11px;padding:10px 4px;font-family:"Vazirmatn",sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.ans-again{background:rgba(255,95,95,.12);color:var(--red);border:1px solid rgba(255,95,95,.25)}
+.ans-hard{background:rgba(255,171,66,.1);color:var(--orange);border:1px solid rgba(255,171,66,.25)}
+.ans-good{background:rgba(108,142,255,.1);color:var(--accent);border:1px solid rgba(108,142,255,.25)}
+.ans-easy{background:rgba(66,224,184,.1);color:var(--green);border:1px solid rgba(66,224,184,.25)}
+.ans-btn:hover{transform:translateY(-2px);filter:brightness(1.2)}
+.ans-interval{font-size:.6rem;opacity:.65}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);text-align:center}
+.empty-icon{font-size:3rem}
+.ai-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px}
+.ai-title{font-size:.75rem;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ai-row{display:flex;gap:8px}
+.ai-row textarea{flex:1;min-height:75px;resize:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:"Vazirmatn",sans-serif;font-size:.86rem;padding:10px 12px;outline:none}
+.ai-row textarea:focus{border-color:var(--accent)}
+.btn-ai{background:linear-gradient(135deg,var(--accent),#8e6cff);border:none;border-radius:10px;color:#fff;font-family:"Vazirmatn",sans-serif;font-size:.78rem;font-weight:700;padding:10px 13px;cursor:pointer;align-self:flex-end;transition:all .2s;white-space:nowrap}
+.btn-ai:hover{transform:translateY(-2px)}.btn-ai:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ai-preview{margin-top:10px;display:flex;flex-direction:column;gap:7px}
+.ai-card-preview{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.acp-texts{flex:1;min-width:0}
+.acp-q{font-size:.82rem;font-weight:600}
+.acp-a{font-size:.72rem;color:var(--muted);margin-top:2px}
+.acp-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:.75rem;background:none;color:var(--text)}
+.acp-check.checked{background:var(--accent);border-color:var(--accent)}
+.ai-save-btn{background:linear-gradient(135deg,var(--green),#2ec49c);border:none;border-radius:10px;color:#0a2a20;font-family:"Vazirmatn",sans-serif;font-size:.83rem;font-weight:700;padding:11px;cursor:pointer;transition:all .2s;width:100%;margin-top:6px}
+.ai-save-btn:hover{transform:translateY(-2px)}
+.divider{display:flex;align-items:center;gap:10px;margin:12px 0}
+.divider-line{flex:1;height:1px;background:var(--border)}
+.divider-text{font-size:.7rem;color:var(--muted)}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+label{font-size:.77rem;color:var(--muted)}
+input,textarea,select{background:var(--surface);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:"Vazirmatn",sans-serif;font-size:.88rem;padding:10px 13px;outline:none;transition:border-color .2s;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,142,255,.1)}
+textarea{min-height:70px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#8e6cff);border:none;border-radius:11px;color:#fff;font-family:"Vazirmatn",sans-serif;font-size:.88rem;font-weight:700;padding:12px;cursor:pointer;transition:all .2s;width:100%}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(108,142,255,.3)}
+.row{display:flex;gap:8px}.row input{flex:1}
+.btn-sm{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--accent);font-family:"Vazirmatn",sans-serif;font-size:.76rem;padding:0 12px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.btn-sm:hover{border-color:var(--accent)}
+.section-title{font-size:.69rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px}
+.card-list{display:flex;flex-direction:column;gap:7px;overflow-y:auto;flex:1}
+.cli{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:10px 12px;display:flex;align-items:center;gap:8px}
+.cli-texts{flex:1;min-width:0}
+.cli-q{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli-a{font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli-deck{font-size:.64rem;background:rgba(108,142,255,.1);color:var(--accent);padding:2px 7px;border-radius:7px;white-space:nowrap;flex-shrink:0}
+.cli-box{font-size:.64rem;padding:2px 7px;border-radius:7px;white-space:nowrap;flex-shrink:0;border:1px solid}
+.cli-del{background:none;border:none;color:var(--red);font-size:.95rem;cursor:pointer;opacity:.5;transition:opacity .2s;padding:4px 5px}
+.cli-del:hover{opacity:1}
+.reminder-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
+.reminder-step{margin-bottom:13px;display:flex;align-items:flex-start;gap:10px}
+.reminder-step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(108,142,255,.15);color:var(--accent);font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.reminder-step p{font-size:.83rem;line-height:1.7}
+.info-box{background:rgba(108,142,255,.07);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px}
+.loading-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin:0 2px;animation:blink 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}.loading-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.box-1{background:rgba(255,95,95,.1);color:var(--red);border-color:rgba(255,95,95,.25)!important}
+.box-2{background:rgba(255,171,66,.1);color:var(--orange);border-color:rgba(255,171,66,.25)!important}
+.box-3{background:rgba(255,228,77,.1);color:#ffe44d;border-color:rgba(255,228,77,.25)!important}
+.box-4{background:rgba(108,142,255,.1);color:var(--accent);border-color:rgba(108,142,255,.25)!important}
+.box-5{background:rgba(66,224,184,.1);color:var(--green);border-color:rgba(66,224,184,.25)!important}
+.speak-btn{background:rgba(108,142,255,0.12);border:1px solid rgba(108,142,255,0.25);border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;margin-top:12px;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.speak-btn:hover{background:rgba(108,142,255,0.25);transform:scale(1.1)}
+.speak-btn.speaking{background:rgba(66,224,184,0.2);border-color:var(--green);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.speak-row{display:flex;gap:10px;width:100%;max-width:480px;opacity:0;pointer-events:none;transition:opacity .3s}
+.speak-row.visible{opacity:1;pointer-events:all}
+.speak-side-btn{flex:1;background:rgba(108,142,255,0.1);border:1px solid rgba(108,142,255,0.2);border-radius:12px;color:var(--accent);font-family:"Vazirmatn",sans-serif;font-size:.8rem;font-weight:600;padding:9px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.speak-side-btn:hover{background:rgba(108,142,255,0.2);transform:translateY(-1px)}
+.speak-side-btn.speaking{background:rgba(66,224,184,0.15);border-color:var(--green);color:var(--green);animation:pulse .8s infinite}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 18px;border-radius:10px;font-size:.8rem;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⚡ فلش‌کارت</div>
+  <div class="hstats">
+    <div class="hstat"><div class="dot" style="background:var(--green)"></div><span id="stat-due">0</span> امروز</div>
+    <div class="hstat"><div class="dot" style="background:var(--accent)"></div><span id="stat-total">0</span> کل</div>
+  </div>
+</header>
+<nav>
+  <button class="nav-btn active" onclick="showScreen('study')">📖 مطالعه</button>
+  <button class="nav-btn" onclick="showScreen('add')">➕ اضافه</button>
+  <button class="nav-btn" onclick="showScreen('manage')">🗂 مدیریت</button>
+  <button class="nav-btn" onclick="showScreen('reminder')">⏰ یادآور</button>
+</nav>
+<div class="screen active" id="screen-study">
+  <div class="leitner-boxes" id="leitner-boxes"></div>
+  <div class="deck-bar" id="deck-bar"></div>
+  <div class="card-scene">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">🎉</div>
+      <div style="font-size:1rem;font-weight:600">همه کارت‌های امروز تموم شد!</div>
+      <div style="font-size:.78rem">فردا ساعت ۱۱ یادت باشه 📚</div>
+    </div>
+    <div class="prog-wrap" id="prog-wrap" style="display:none"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="card-counter" id="card-counter" style="display:none"></div>
+    <div class="card-wrap" id="card-wrap" style="display:none" onclick="flipCard()">
+      <div class="card-inner" id="card-inner">
+        <div class="card-face card-front">
+          <div class="card-meta"><div class="card-tag" id="card-tag"></div><div class="card-box-badge" id="card-box-badge"></div></div>
+          <div class="card-label">سوال</div>
+          <div class="card-text" id="card-q"></div>
+          <div style="margin-top:8px;font-size:.62rem;color:var(--muted)">برای دیدن جواب بزن 👆</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-label">جواب</div>
+          <div class="card-text" id="card-a"></div>
+        </div>
+      </div>
+    </div>
+    <div class="flip-hint" id="flip-hint" style="display:none">روی کارت بزن تا جواب ببینی</div>
+    <div class="speak-row" id="speak-row">
+      <button class="speak-side-btn" id="speak-q" onclick="speakCard('q')">🔊 <span>جلو</span></button>
+      <button class="speak-side-btn" id="speak-a" onclick="speakCard('a')">🔊 <span>پشت</span></button>
+    </div>
+    <div class="ans-row" id="ans-row">
+      <button class="ans-btn ans-again" onclick="answer(0)"><span>دوباره</span><span class="ans-interval" id="int-again">جعبه ۱</span></button>
+      <button class="ans-btn ans-hard" onclick="answer(1)"><span>سخت</span><span class="ans-interval" id="int-hard"></span></button>
+      <button class="ans-btn ans-good" onclick="answer(2)"><span>خوب</span><span class="ans-interval" id="int-good"></span></button>
+      <button class="ans-btn ans-easy" onclick="answer(3)"><span>راحت</span><span class="ans-interval" id="int-easy"></span></button>
+    </div>
+  </div>
+</div>
+<div class="screen" id="screen-add">
+  <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column">
+    <div class="ai-box" style="margin-bottom:14px">
+      <div class="ai-title">📲 ایمپورت از تلگرام یا هر جایی</div>
+      <div style="font-size:.73rem;color:var(--muted);margin-bottom:10px;line-height:1.9">
+        توی تلگرام به خودت پیام بده، کپی کن، اینجا paste کن:<br>
+        <span style="color:var(--accent);font-weight:600">خط ۱ = جلوی کارت</span><br>
+        <span style="color:#a8d8ff;font-weight:600">خط ۲ = پشت کارت</span>
+      </div>
+      <div class="form-group" style="margin-bottom:9px"><label>دسته‌بندی</label><select id="bulk-deck"></select></div>
+      <div class="form-group" style="margin-bottom:9px">
+        <textarea id="bulk-input" style="min-height:150px;font-size:.88rem;line-height:2" placeholder="Apple&#10;سیب 🍎&#10;Good morning&#10;صباح الخير&#10;مرحباً&#10;سلام / خوش آمدید&#10;..."></textarea>
+      </div>
+      <div id="bulk-preview-info" style="display:none;font-size:.73rem;color:var(--green);margin-bottom:8px;padding:7px 10px;background:rgba(66,224,184,0.08);border-radius:8px;border:1px solid rgba(66,224,184,0.2)"></div>
+      <button class="btn-primary" style="background:linear-gradient(135deg,#42e0b8,#2ec49c);color:#0a2a20" onclick="saveBulk()">✅ ایمپورت کارت‌ها</button>
+    </div>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">یا یک کارت دستی اضافه کن</div><div class="divider-line"></div></div>
+    <div class="form-group"><label>دسته‌بندی</label><select id="add-deck"></select>
+      <div class="row" style="margin-top:7px"><input id="new-deck-name" placeholder="دسته‌بندی جدید..."><button class="btn-sm" onclick="addDeck()">+ اضافه</button></div>
+    </div>
+    <div class="form-group"><label>سوال</label><textarea id="add-q" placeholder="سوال یا کلمه..."></textarea></div>
+    <div class="form-group"><label>جواب</label><textarea id="add-a" placeholder="جواب یا معنی..."></textarea></div>
+    <button class="btn-primary" onclick="addCard()">✅ ذخیره</button>
+    <div style="height:20px"></div>
+  </div>
+</div>
+<div class="screen" id="screen-manage">
+  <div class="section-title">همه کارت‌ها — <span id="manage-count">0</span> عدد</div>
+  <div class="card-list" id="card-list"></div>
+</div>
+<div class="screen" id="screen-reminder">
+  <div class="reminder-card">
+    <div style="font-size:.9rem;font-weight:700;margin-bottom:14px">⏰ یادآور روزانه ساعت ۱۱</div>
+    <div class="reminder-step"><div class="reminder-step-num">۱</div><p>اپ <b>یادآورها</b> (Reminders) رو باز کن</p></div>
+    <div class="reminder-step"><div class="reminder-step-num">۲</div><p>یادآور جدید با نام <b>«📚 وقت فلش‌کارت!»</b> بساز</p></div>
+    <div class="reminder-step"><div class="reminder-step-num">۳</div><p>ساعت رو <b>۱۱:۰۰</b> و تکرار رو روی <b>روزانه</b> بذار</p></div>
+    <div class="info-box">
+      <div style="font-size:.73rem;color:var(--accent);margin-bottom:8px">📦 سیستم لایتنر</div>
+      <div style="font-size:.77rem;color:var(--muted);line-height:1.9">
+        📦۱ قرمز → هر روز | 📦۲ نارنجی → هر ۲ روز<br>
+        📦۳ زرد → هر ۴ روز | 📦۴ آبی → هر ۸ روز<br>
+        📦۵ سبز → هر ۱۶ روز<br><br>
+        ✅ جواب درست → جعبه بالاتر<br>
+        ❌ جواب غلط → برمیگرده جعبه ۱
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<footer style="z-index:10;text-align:center;padding:14px 20px;border-top:1px solid var(--border);background:rgba(15,15,19,.9);font-size:.7rem;color:var(--muted);line-height:1.8">طراحی و تولید <span style="color:var(--accent);font-weight:700">بهنام مرندی</span><br>© ۱۴۰۴ — تمامی حقوق محفوظ است</footer>
+<script>
+const KEY="fc_v4";
+const INTERVALS=[0,1,2,4,8,16];
+const PRESET_CARDS=[];
+
+function load(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(KEY));
+    if(saved) return saved;
+  }catch(e){}
+  return def();
+}
+
+function def(){
+  return{decks:['زبان انگلیسی','عربی','عمومی'],cards:[]};
+}
+
+function load(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(KEY));
+    if(saved){
+      // merge preset cards that don't exist yet
+      const existingIds=new Set(saved.cards.map(c=>c.id));
+      const newPreset=PRESET_CARDS.filter(c=>!existingIds.has(c.id));
+      if(newPreset.length>0){
+        saved.cards=[...saved.cards,...newPreset];
+        // add new decks
+        newPreset.forEach(c=>{if(!saved.decks.includes(c.deck))saved.decks.push(c.deck)});
+        localStorage.setItem(KEY,JSON.stringify(saved));
+      }
+      return saved;
+    }
+  }catch(e){}
+  return def();
+}
+
+function def(){
+  const decks=[...new Set(PRESET_CARDS.map(c=>c.deck))];
+  return{decks,cards:PRESET_CARDS.map(c=>({...c,due:Date.now()}))};
+}
+
+function save(){
+  try{
+    localStorage.setItem(KEY,JSON.stringify(data));
+  }catch(e){
+    toast('⚠️ خطا در ذخیره — حافظه پر یا Private Mode');
+    console.error('Save error:',e);
+  }
+}
+
+let data=load(),activeDeck="همه",queue=[],cidx=0,flipped=false;
+
+function showScreen(n){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("screen-"+n).classList.add("active");
+  ["study","add","manage","reminder"].forEach((s,i)=>{if(s===n)document.querySelectorAll(".nav-btn")[i].classList.add("active")});
+  if(n==="study")renderStudy();
+  if(n==="add")renderForms();
+  if(n==="manage")renderManage();
+}
+
+function bclass(b){return"box-"+(b||1)}
+
+function renderLeitner(){
+  const counts=[0,0,0,0,0];
+  data.cards.forEach(c=>counts[(c.box||1)-1]++);
+  document.getElementById("leitner-boxes").innerHTML=[1,2,3,4,5].map((b,i)=>`
+    <div class="lbox lbox-${b}"><div class="lbox-num">📦${b}</div><div class="lbox-label">${["روزانه","۲روز","۴روز","۸روز","۱۶روز"][i]}</div><div class="lbox-count">${counts[i]}</div></div>`).join("");
+}
+
+function getDue(){
+  const n=Date.now();
+  let c=data.cards.filter(x=>(x.due||0)<=n);
+  if(activeDeck!=="همه")c=c.filter(x=>x.deck===activeDeck);
+  return c;
+}
+
+function renderStudy(){renderLeitner();renderDeckBar();updateStats();queue=getDue();cidx=0;showCard()}
+
+function renderDeckBar(){
+  document.getElementById("deck-bar").innerHTML=["همه",...data.decks].map(d=>
+    `<button class="deck-chip ${d===activeDeck?"active":""}" onclick="selectDeck('${d.replace(/'/g,"\'")}'">${d}</button>`).join("");
+}
+
+function selectDeck(d){activeDeck=d;renderStudy()}
+
+function showCard(){
+  const empty=document.getElementById("empty-state");
+  const wrap=document.getElementById("card-wrap");
+  const pw=document.getElementById("prog-wrap");
+  const cc=document.getElementById("card-counter");
+  const hint=document.getElementById("flip-hint");
+  const ar=document.getElementById("ans-row");
+  const sr=document.getElementById("speak-row");
+  if(queue.length===0){
+    empty.style.display="flex";wrap.style.display="none";
+    pw.style.display="none";cc.style.display="none";
+    hint.style.display="none";ar.classList.remove("visible");
+    sr.classList.remove("visible");return;
+  }
+  empty.style.display="none";wrap.style.display="block";
+  pw.style.display="block";cc.style.display="block";hint.style.display="block";
+  sr.classList.add("visible");
+  const card=queue[cidx];
+  document.getElementById("card-q").textContent=card.q;
+  document.getElementById("card-a").textContent=card.a;
+  document.getElementById("card-tag").textContent=card.deck;
+  const bb=document.getElementById("card-box-badge");
+  bb.textContent="📦"+(card.box||1);bb.className="card-box-badge "+bclass(card.box);
+  const all=activeDeck==="همه"?data.cards:data.cards.filter(c=>c.deck===activeDeck);
+  const done=all.length-getDue().length;
+  document.getElementById("prog-fill").style.width=(all.length?(done/all.length*100):0)+"%";
+  cc.textContent=`${cidx+1} از ${queue.length} کارت امروز`;
+  flipped=false;
+  const inner=document.getElementById("card-inner");
+  inner.style.transition='none';
+  inner.classList.remove("flipped");
+  // force reflow then restore transition
+  inner.offsetHeight;
+  inner.style.transition='';
+  ar.classList.remove("visible");
+  const b=card.box||1;
+  document.getElementById("int-again").textContent="جعبه ۱";
+  document.getElementById("int-hard").textContent=b>1?`جعبه ${b-1}`:"جعبه ۱";
+  document.getElementById("int-good").textContent=b<5?`جعبه ${b+1}`:"جعبه ۵ ✓";
+  document.getElementById("int-easy").textContent=b<5?`جعبه ${Math.min(5,b+2)}`:"جعبه ۵ ✓";
+}
+
+function flipCard(){
+  if(flipped)return;flipped=true;
+  document.getElementById("card-inner").classList.add("flipped");
+  document.getElementById("flip-hint").style.display="none";
+  document.getElementById("ans-row").classList.add("visible");
+}
+
+function answer(q){
+  const card=queue[cidx];
+  const idx=data.cards.findIndex(c=>c.id===card.id);
+  if(idx===-1)return;
+  const c=data.cards[idx];
+  const DAY=86400000,now=Date.now();
+  if(q===0){c.box=1;c.due=now+60000}
+  else if(q===1){c.box=Math.max(1,(c.box||1)-1);c.due=now+INTERVALS[c.box]*DAY}
+  else if(q===2){c.box=Math.min(5,(c.box||1)+1);c.due=now+INTERVALS[c.box]*DAY}
+  else{c.box=Math.min(5,(c.box||1)+2);c.due=now+INTERVALS[c.box]*DAY}
+  save();renderLeitner();
+  if(q===0){queue.splice(cidx,1);queue.push(card);if(cidx>=queue.length)cidx=0}
+  else{queue.splice(cidx,1);if(cidx>=queue.length)cidx=Math.max(0,queue.length-1)}
+  updateStats();showCard();
+}
+
+function renderForms(){
+  ["add-deck","bulk-deck"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=data.decks.map(d=>`<option value="${d}">${d}</option>`).join("");
+  });
+}
+
+
+function saveBulk(){
+  const raw=document.getElementById("bulk-input").value;
+  const deck=document.getElementById("bulk-deck").value||data.decks[0];
+  const lines=raw.split("\n").map(l=>l.trim()).filter(l=>l);
+  if(lines.length<2){toast("⚠️ حداقل یک جفت بنویس");return}
+  let added=0;
+  for(let i=0;i+1<lines.length;i+=2){
+    data.cards.push({id:Date.now()+Math.random(),deck,q:lines[i],a:lines[i+1],box:1,due:Date.now()});
+    added++;
+  }
+  if(!added){toast("⚠️ فرمت درست نیست");return}
+  save();updateStats();
+  document.getElementById("bulk-input").value="";
+  document.getElementById("bulk-preview-info").style.display="none";
+  toast("✅ "+added+" کارت اضافه شد!");
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  const bi=document.getElementById("bulk-input");
+  const info=document.getElementById("bulk-preview-info");
+  if(bi){bi.addEventListener("input",()=>{
+    const lines=bi.value.split("\n").map(l=>l.trim()).filter(l=>l);
+    const hasPipe=lines.some(l=>l.includes('|'));
+    const count=hasPipe?lines.filter(l=>l.includes('|')).length:Math.floor(lines.length/2);
+    if(count>0){info.style.display="block";info.textContent="✅ "+count+" کارت آماده ایمپورت";}else{info.style.display="none";}
+  });}
+});
+function addDeck(){
+  const n=document.getElementById("new-deck-name").value.trim();
+  if(!n)return;
+  if(data.decks.includes(n)){toast("این دسته قبلاً هست");return}
+  data.decks.push(n);save();
+  document.getElementById("new-deck-name").value="";
+  renderForms();toast("✅ دسته اضافه شد");
+}
+
+function addCard(){
+  const q=document.getElementById("add-q").value.trim();
+  const a=document.getElementById("add-a").value.trim();
+  const deck=document.getElementById("add-deck").value;
+  if(!q||!a){toast("⚠️ سوال و جواب رو پر کن");return}
+  data.cards.push({id:Date.now(),deck,q,a,box:1,due:Date.now()});
+  save();document.getElementById("add-q").value="";document.getElementById("add-a").value="";
+  updateStats();toast("✅ کارت ذخیره شد!");
+}
+
+function renderManage(){
+  document.getElementById("manage-count").textContent=data.cards.length;
+  const list=document.getElementById("card-list");
+  if(!data.cards.length){list.innerHTML="<div style=\"color:var(--muted);text-align:center;padding:30px\">هنوز کارتی نداری</div>";return}
+  list.innerHTML=data.cards.map(c=>`
+    <div class="cli">
+      <div class="cli-texts"><div class="cli-q">${c.q}</div><div class="cli-a">${c.a}</div></div>
+      <div class="cli-deck">${c.deck}</div>
+      <div class="cli-box ${bclass(c.box||1)}">📦${c.box||1}</div>
+      <button class="cli-del" onclick="delCard(${c.id})">🗑</button>
+    </div>`).join("");
+}
+
+function delCard(id){
+  data.cards=data.cards.filter(c=>c.id!==id);
+  save();renderManage();updateStats();toast("🗑 حذف شد");
+}
+
+function updateStats(){
+  document.getElementById("stat-total").textContent=data.cards.length;
+  document.getElementById("stat-due").textContent=data.cards.filter(c=>(c.due||0)<=Date.now()).length;
+}
+
+let tt;
+function toast(msg){
+  const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
+  clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2200);
+}
+
+// ── SPEECH ───────────────────────────────────────────────
+function detectLang(text){
+  if(/[\u0600-\u06FF]/.test(text)){
+    if(/[پچژگک]/.test(text)) return 'fa-IR';
+    return 'ar-SA';
+  }
+  return 'en-US';
+}
+
+function speakCard(side){
+  const text=document.getElementById('card-'+side).textContent;
+  if(!text) return;
+  window.speechSynthesis.cancel();
+  const btn=document.getElementById('speak-'+side);
+  document.querySelectorAll('.speak-side-btn').forEach(b=>b.classList.remove('speaking'));
+  btn.classList.add('speaking');
+  const utter=new SpeechSynthesisUtterance(text);
+  utter.lang=detectLang(text);
+  utter.rate=0.9;
+  utter.onend=()=>btn.classList.remove('speaking');
+  utter.onerror=()=>btn.classList.remove('speaking');
+  window.speechSynthesis.speak(utter);
+}
+
+renderStudy();renderForms();
+
+// غیرفعال کردن service worker که باعث مشکل ذخیره میشه
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
+}
+
+// تست localStorage
+try{
+  localStorage.setItem('_test','1');
+  localStorage.removeItem('_test');
+}catch(e){
+  setTimeout(()=>toast('⚠️ Private Mode رو خاموش کن — ذخیره کار نمیکنه'),1500);
+}
+</script>
+</body>
+</html>
