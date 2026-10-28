@@ -1642,8 +1642,11 @@ const VOICE_PREFS = {
 };
 
 function detectLang(text) {
-  if (/[؀-ۿ]/.test(text)) {
-    return /[پچژگکی]/.test(text) ? 'fa-IR' : 'ar-SA';
+  if (!text) return 'en-US';
+  const persianChars = (text.match(/[پچژگکیئ]/g) || []).length;
+  const arabicChars  = (text.match(/[؀-ۿ]/g) || []).length;
+  if (arabicChars > 0) {
+    return persianChars > 0 ? 'fa-IR' : 'ar-SA';
   }
   return 'en-US';
 }
@@ -1666,6 +1669,8 @@ async function getBestVoice(lang) {
   if (voiceCache[lang]) return voiceCache[lang];
   const voices = await loadVoices();
   const prefs = VOICE_PREFS[lang] || [];
+
+  // 1. Try exact named/lang match
   for (const pref of prefs) {
     const v = voices.find(v =>
       v.name.toLowerCase().includes(pref.toLowerCase()) ||
@@ -1673,9 +1678,34 @@ async function getBestVoice(lang) {
     );
     if (v) { voiceCache[lang] = v; return v; }
   }
+
+  // 2. For Persian: try Arabic voice (closest to fa on iOS)
+  if (lang === 'fa-IR') {
+    const arPrefs = VOICE_PREFS['ar-SA'];
+    for (const pref of arPrefs) {
+      const v = voices.find(v =>
+        v.name.toLowerCase().includes(pref.toLowerCase()) ||
+        v.lang.toLowerCase().startsWith(pref.toLowerCase())
+      );
+      if (v) { voiceCache[lang] = v; return v; }
+    }
+  }
+
+  // 3. Language prefix fallback
   const fallback = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
   if (fallback) { voiceCache[lang] = fallback; return fallback; }
-  return null;
+
+  // 4. Last resort: any available voice
+  return voices[0] || null;
+}
+
+// Check if Persian voice actually exists on this device
+async function checkFaVoice() {
+  const voices = await loadVoices();
+  return voices.some(v =>
+    v.lang.startsWith('fa') ||
+    VOICE_PREFS['fa-IR'].some(p => v.name.toLowerCase().includes(p.toLowerCase()))
+  );
 }
 
 const VOICE_SETTINGS = {
@@ -1699,6 +1729,15 @@ async function speak(side) {
   const voice = await getBestVoice(lang);
   const cfg = VOICE_SETTINGS[lang] || { rate: 0.9, pitch: 1.0, volume: 1.0 };
 
+  // Warn if Persian text but no Persian voice found
+  if (lang === 'fa-IR') {
+    checkFaVoice().then(hasFa => {
+      if (!hasFa) {
+        toast('⚠️ ویس فارسی نصب نیست — برای نصب: تنظیمات → عمومی → گفتار → صداها');
+      }
+    });
+  }
+
   const u = new SpeechSynthesisUtterance(text);
   u.lang = lang;
   u.rate = cfg.rate * speedMult;
@@ -1707,7 +1746,7 @@ async function speak(side) {
   if (voice) u.voice = voice;
 
   u.onend = () => btn.classList.remove('speaking');
-  u.onerror = () => btn.classList.remove('speaking');
+  u.onerror = () => { btn.classList.remove('speaking'); toast('⚠️ خواندن ممکن نشد'); };
 
   window.speechSynthesis.speak(u);
 
@@ -1718,8 +1757,8 @@ async function speak(side) {
       window.speechSynthesis.pause();
       window.speechSynthesis.resume();
     }, 10000);
-    u.onend = () => { btn.classList.remove('speaking'); clearInterval(keepAlive); };
-    u.onerror = () => { btn.classList.remove('speaking'); clearInterval(keepAlive); };
+    u.onend  = () => { btn.classList.remove('speaking'); clearInterval(keepAlive); };
+    u.onerror = () => { btn.classList.remove('speaking'); clearInterval(keepAlive); toast('⚠️ خواندن ممکن نشد'); };
   }
 }
 
