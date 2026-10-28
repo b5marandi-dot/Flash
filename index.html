@@ -1799,8 +1799,20 @@ function updateStats() {
 }
 
 /* ══════════════════════════════════════════
-   SPEECH
+   SPEECH — Smart Voice Selection
 ══════════════════════════════════════════ */
+
+// Voice cache
+let voiceCache = {};
+let voicesLoaded = false;
+
+// iOS/macOS preferred voices per language (quality order)
+const VOICE_PREFS = {
+  'fa-IR': ['Majid','Siri Majid','Behzad','Farsi','Persian','fa'],
+  'ar-SA': ['Laila','Maged','Siri Laila','Siri Maged','Tarik','ar-SA','ar'],
+  'en-US': ['Samantha','Karen','Moira','Siri Samantha','Google US English','Microsoft Zira','en-US','en-GB','en']
+};
+
 function detectLang(text) {
   if (/[؀-ۿ]/.test(text)) {
     return /[پچژگکی]/.test(text) ? 'fa-IR' : 'ar-SA';
@@ -1808,20 +1820,98 @@ function detectLang(text) {
   return 'en-US';
 }
 
-function speak(side) {
-  const text = document.getElementById('card-' + side).textContent;
+function loadVoices() {
+  return new Promise(resolve => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length) { voicesLoaded = true; resolve(voices); return; }
+    // iOS loads voices async
+    let tries = 0;
+    const iv = setInterval(() => {
+      const v = speechSynthesis.getVoices();
+      if (v.length || ++tries > 20) {
+        clearInterval(iv); voicesLoaded = true; resolve(v);
+      }
+    }, 100);
+  });
+}
+
+async function getBestVoice(lang) {
+  if (voiceCache[lang]) return voiceCache[lang];
+  const voices = await loadVoices();
+  const prefs = VOICE_PREFS[lang] || [];
+
+  // 1. Try preferred names first (iOS quality voices)
+  for (const pref of prefs) {
+    const v = voices.find(v =>
+      v.name.toLowerCase().includes(pref.toLowerCase()) ||
+      v.lang.toLowerCase().startsWith(pref.toLowerCase())
+    );
+    if (v) { voiceCache[lang] = v; return v; }
+  }
+
+  // 2. Fallback: any voice matching the lang prefix
+  const fallback = voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+  if (fallback) { voiceCache[lang] = fallback; return fallback; }
+
+  return null; // use browser default
+}
+
+// Voice settings per lang (tuned for iOS naturalness)
+const VOICE_SETTINGS = {
+  'fa-IR': { rate: 0.82, pitch: 1.05, volume: 1.0 },
+  'ar-SA': { rate: 0.80, pitch: 1.00, volume: 1.0 },
+  'en-US': { rate: 0.90, pitch: 1.00, volume: 1.0 },
+};
+
+// User speed preference (1.0 = normal)
+let speedMult = parseFloat(localStorage.getItem('tts_speed') || '1.0');
+
+async function speak(side) {
+  const text = document.getElementById('card-' + side)?.textContent?.trim();
   if (!text) return;
+
   window.speechSynthesis.cancel();
   document.querySelectorAll('.speak-btn').forEach(b => b.classList.remove('speaking'));
   const btn = document.getElementById('spk-' + side);
   btn.classList.add('speaking');
+
+  const lang = detectLang(text);
+  const voice = await getBestVoice(lang);
+  const cfg = VOICE_SETTINGS[lang] || { rate: 0.9, pitch: 1.0, volume: 1.0 };
+
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = detectLang(text);
-  u.rate = 0.9;
+  u.lang = lang;
+  u.rate = cfg.rate * speedMult;
+  u.pitch = cfg.pitch;
+  u.volume = cfg.volume;
+  if (voice) u.voice = voice;
+
   u.onend = () => btn.classList.remove('speaking');
   u.onerror = () => btn.classList.remove('speaking');
+
+  // iOS Safari bug: sometimes stops mid-sentence — keep-alive ping
   window.speechSynthesis.speak(u);
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    const keepAlive = setInterval(() => {
+      if (!window.speechSynthesis.speaking) { clearInterval(keepAlive); return; }
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }, 10000);
+    u.onend = () => { btn.classList.remove('speaking'); clearInterval(keepAlive); };
+    u.onerror = () => { btn.classList.remove('speaking'); clearInterval(keepAlive); };
+  }
 }
+
+// Speed control — called from settings panel
+function setTTSSpeed(val) {
+  speedMult = parseFloat(val);
+  localStorage.setItem('tts_speed', speedMult);
+  const lbl = document.getElementById('speed-label');
+  if (lbl) lbl.textContent = speedMult === 1 ? 'عادی' : speedMult < 1 ? 'کند' : 'سریع';
+}
+
+// Warm up voices on first user interaction (iOS requires this)
+document.addEventListener('touchstart', () => { if (!voicesLoaded) loadVoices(); }, { once: true, passive: true });
 
 /* ══════════════════════════════════════════
    UTILS
