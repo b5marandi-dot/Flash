@@ -1,511 +1,1830 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="فلش‌کارت">
-<meta name="theme-color" content="#0f0f13">
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="manifest" href="manifest.json">
+<meta name="claude:viewport-fit-sides" content="cover">
 <title>فلش‌کارت</title>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+
 <style>
-:root{--bg:#0f0f13;--surface:#1a1a24;--surface2:#22222f;--accent:#6c8eff;--accent2:#ff6c8e;--text:#e8e8f0;--muted:#7878a0;--border:rgba(108,142,255,0.15);--green:#42e0b8;--red:#ff5f5f;--orange:#ffab42}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Vazirmatn",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-body::before{content:"";position:fixed;top:-30%;right:-10%;width:60vw;height:60vw;background:radial-gradient(circle,rgba(108,142,255,0.06) 0%,transparent 70%);pointer-events:none;z-index:0}
-header{z-index:10;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(15,15,19,.95);backdrop-filter:blur(10px)}
-.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hstats{display:flex;gap:8px}
-.hstat{font-size:.73rem;color:var(--muted);background:var(--surface);padding:4px 10px;border-radius:20px;border:1px solid var(--border);display:flex;align-items:center;gap:5px}
-.dot{width:7px;height:7px;border-radius:50%}
-nav{z-index:10;display:flex;gap:2px;padding:10px 12px 0;background:rgba(15,15,19,.9);border-bottom:1px solid var(--border);overflow-x:auto}
-.nav-btn{background:none;border:none;color:var(--muted);font-family:"Vazirmatn",sans-serif;font-size:.8rem;padding:8px 12px;border-radius:8px 8px 0 0;cursor:pointer;transition:all .2s;position:relative;white-space:nowrap}
-.nav-btn.active{color:var(--accent);background:var(--surface)}
-.nav-btn.active::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent)}
-.screen{display:none;flex:1;padding:16px;flex-direction:column;position:relative;z-index:1}
-.screen.active{display:flex}
-.leitner-boxes{display:flex;gap:5px;margin-bottom:14px}
-.lbox{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 6px;text-align:center}
-.lbox-num{font-size:.85rem;font-weight:700}
-.lbox-label{font-size:.56rem;color:var(--muted);margin-top:1px}
-.lbox-count{font-size:.7rem;margin-top:3px}
-.lbox-1 .lbox-num{color:var(--red)}.lbox-2 .lbox-num{color:var(--orange)}.lbox-3 .lbox-num{color:#ffe44d}.lbox-4 .lbox-num{color:var(--accent)}.lbox-5 .lbox-num{color:var(--green)}
-.deck-bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
-.deck-chip{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:"Vazirmatn",sans-serif;font-size:.75rem;padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .2s}
-.deck-chip.active{background:rgba(108,142,255,.12);border-color:var(--accent);color:var(--accent)}
-.card-scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-.prog-wrap{width:100%;max-width:480px;height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s ease}
-.card-counter{font-size:.74rem;color:var(--muted);text-align:center}
-.card-wrap{width:100%;max-width:480px;height:255px;perspective:1200px;cursor:pointer}
-.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
-.card-inner.flipped{transform:rotateY(180deg)}
-.card-face{position:absolute;width:100%;height:100%;border-radius:20px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
-.card-front{background:#1e1e2e;border:1px solid var(--border);box-shadow:0 8px 40px rgba(0,0,0,.5)}
-.card-back{background:#12202e;border:1px solid rgba(108,142,255,.25);box-shadow:0 8px 40px rgba(108,142,255,.1);transform:rotateY(180deg)}
-.card-label{font-size:.64rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:11px}
-.card-text{font-size:1.3rem;font-weight:600;line-height:1.6}
-.card-back .card-text{color:#a8d8ff}
-.card-meta{position:absolute;top:11px;right:12px;display:flex;gap:5px;align-items:center}
-.card-tag{font-size:.64rem;background:rgba(108,142,255,.1);color:var(--accent);padding:2px 7px;border-radius:7px;border:1px solid var(--border)}
-.card-box-badge{font-size:.64rem;padding:2px 7px;border-radius:7px;border:1px solid}
-.flip-hint{font-size:.72rem;color:var(--muted)}
-.ans-row{display:flex;gap:7px;width:100%;max-width:480px;opacity:0;pointer-events:none;transform:translateY(8px);transition:all .3s}
-.ans-row.visible{opacity:1;pointer-events:all;transform:translateY(0)}
-.ans-btn{flex:1;border:none;border-radius:11px;padding:10px 4px;font-family:"Vazirmatn",sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px}
-.ans-again{background:rgba(255,95,95,.12);color:var(--red);border:1px solid rgba(255,95,95,.25)}
-.ans-hard{background:rgba(255,171,66,.1);color:var(--orange);border:1px solid rgba(255,171,66,.25)}
-.ans-good{background:rgba(108,142,255,.1);color:var(--accent);border:1px solid rgba(108,142,255,.25)}
-.ans-easy{background:rgba(66,224,184,.1);color:var(--green);border:1px solid rgba(66,224,184,.25)}
-.ans-btn:hover{transform:translateY(-2px);filter:brightness(1.2)}
-.ans-interval{font-size:.6rem;opacity:.65}
-.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);text-align:center}
-.empty-icon{font-size:3rem}
-.ai-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px}
-.ai-title{font-size:.75rem;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.ai-row{display:flex;gap:8px}
-.ai-row textarea{flex:1;min-height:75px;resize:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:"Vazirmatn",sans-serif;font-size:.86rem;padding:10px 12px;outline:none}
-.ai-row textarea:focus{border-color:var(--accent)}
-.btn-ai{background:linear-gradient(135deg,var(--accent),#8e6cff);border:none;border-radius:10px;color:#fff;font-family:"Vazirmatn",sans-serif;font-size:.78rem;font-weight:700;padding:10px 13px;cursor:pointer;align-self:flex-end;transition:all .2s;white-space:nowrap}
-.btn-ai:hover{transform:translateY(-2px)}.btn-ai:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.ai-preview{margin-top:10px;display:flex;flex-direction:column;gap:7px}
-.ai-card-preview{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px}
-.acp-texts{flex:1;min-width:0}
-.acp-q{font-size:.82rem;font-weight:600}
-.acp-a{font-size:.72rem;color:var(--muted);margin-top:2px}
-.acp-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:.75rem;background:none;color:var(--text)}
-.acp-check.checked{background:var(--accent);border-color:var(--accent)}
-.ai-save-btn{background:linear-gradient(135deg,var(--green),#2ec49c);border:none;border-radius:10px;color:#0a2a20;font-family:"Vazirmatn",sans-serif;font-size:.83rem;font-weight:700;padding:11px;cursor:pointer;transition:all .2s;width:100%;margin-top:6px}
-.ai-save-btn:hover{transform:translateY(-2px)}
-.divider{display:flex;align-items:center;gap:10px;margin:12px 0}
-.divider-line{flex:1;height:1px;background:var(--border)}
-.divider-text{font-size:.7rem;color:var(--muted)}
-.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
-label{font-size:.77rem;color:var(--muted)}
-input,textarea,select{background:var(--surface);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:"Vazirmatn",sans-serif;font-size:.88rem;padding:10px 13px;outline:none;transition:border-color .2s;resize:vertical}
-input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,142,255,.1)}
-textarea{min-height:70px}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#8e6cff);border:none;border-radius:11px;color:#fff;font-family:"Vazirmatn",sans-serif;font-size:.88rem;font-weight:700;padding:12px;cursor:pointer;transition:all .2s;width:100%}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(108,142,255,.3)}
-.row{display:flex;gap:8px}.row input{flex:1}
-.btn-sm{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--accent);font-family:"Vazirmatn",sans-serif;font-size:.76rem;padding:0 12px;cursor:pointer;white-space:nowrap;transition:all .2s}
-.btn-sm:hover{border-color:var(--accent)}
-.section-title{font-size:.69rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:9px}
-.card-list{display:flex;flex-direction:column;gap:7px;overflow-y:auto;flex:1}
-.cli{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:10px 12px;display:flex;align-items:center;gap:8px}
-.cli-texts{flex:1;min-width:0}
-.cli-q{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cli-a{font-size:.7rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cli-deck{font-size:.64rem;background:rgba(108,142,255,.1);color:var(--accent);padding:2px 7px;border-radius:7px;white-space:nowrap;flex-shrink:0}
-.cli-box{font-size:.64rem;padding:2px 7px;border-radius:7px;white-space:nowrap;flex-shrink:0;border:1px solid}
-.cli-del{background:none;border:none;color:var(--red);font-size:.95rem;cursor:pointer;opacity:.5;transition:opacity .2s;padding:4px 5px}
-.cli-del:hover{opacity:1}
-.reminder-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px}
-.reminder-step{margin-bottom:13px;display:flex;align-items:flex-start;gap:10px}
-.reminder-step-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(108,142,255,.15);color:var(--accent);font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:1px}
-.reminder-step p{font-size:.83rem;line-height:1.7}
-.info-box{background:rgba(108,142,255,.07);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:10px}
-.loading-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin:0 2px;animation:blink 1.2s infinite}
-.loading-dots span:nth-child(2){animation-delay:.2s}.loading-dots span:nth-child(3){animation-delay:.4s}
-@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-.box-1{background:rgba(255,95,95,.1);color:var(--red);border-color:rgba(255,95,95,.25)!important}
-.box-2{background:rgba(255,171,66,.1);color:var(--orange);border-color:rgba(255,171,66,.25)!important}
-.box-3{background:rgba(255,228,77,.1);color:#ffe44d;border-color:rgba(255,228,77,.25)!important}
-.box-4{background:rgba(108,142,255,.1);color:var(--accent);border-color:rgba(108,142,255,.25)!important}
-.box-5{background:rgba(66,224,184,.1);color:var(--green);border-color:rgba(66,224,184,.25)!important}
-.speak-btn{background:rgba(108,142,255,0.12);border:1px solid rgba(108,142,255,0.25);border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;margin-top:12px;transition:all .2s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.speak-btn:hover{background:rgba(108,142,255,0.25);transform:scale(1.1)}
-.speak-btn.speaking{background:rgba(66,224,184,0.2);border-color:var(--green);animation:pulse .8s infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
-.speak-row{display:flex;gap:10px;width:100%;max-width:480px;opacity:0;pointer-events:none;transition:opacity .3s}
-.speak-row.visible{opacity:1;pointer-events:all}
-.speak-side-btn{flex:1;background:rgba(108,142,255,0.1);border:1px solid rgba(108,142,255,0.2);border-radius:12px;color:var(--accent);font-family:"Vazirmatn",sans-serif;font-size:.8rem;font-weight:600;padding:9px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
-.speak-side-btn:hover{background:rgba(108,142,255,0.2);transform:translateY(-1px)}
-.speak-side-btn.speaking{background:rgba(66,224,184,0.15);border-color:var(--green);color:var(--green);animation:pulse .8s infinite}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 18px;border-radius:10px;font-size:.8rem;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — روشن‌محور، آرام، با تأکید رنگی دقیق
+   Layout: single-column app shell, card-centered study view
+═══════════════════════════════════════════════════════ */
+:root {
+  /* Surface */
+  --bg:          #F5F3EE;
+  --surface:     #FFFFFF;
+  --surface2:    #EEECe6;
+  --surface3:    #E6E3D8;
+
+  /* Text */
+  --fg:          #1A1916;
+  --fg2:         #5A5649;
+  --fg3:         #8E8A7E;
+
+  /* Accent — warm indigo */
+  --accent:      #5C5BE5;
+  --accent-soft: rgba(92,91,229,0.10);
+  --accent-mid:  rgba(92,91,229,0.20);
+
+  /* Semantic */
+  --red:         #E03E3E;
+  --red-soft:    rgba(224,62,62,0.10);
+  --orange:      #D97706;
+  --orange-soft: rgba(217,119,6,0.10);
+  --yellow:      #CA8A04;
+  --yellow-soft: rgba(202,138,4,0.10);
+  --blue:        #2563EB;
+  --blue-soft:   rgba(37,99,235,0.10);
+  --green:       #059669;
+  --green-soft:  rgba(5,150,105,0.10);
+
+  /* Structure */
+  --border:      rgba(26,25,22,0.08);
+  --border-mid:  rgba(26,25,22,0.14);
+  --shadow-sm:   0 1px 3px rgba(26,25,22,0.06), 0 1px 2px rgba(26,25,22,0.04);
+  --shadow-md:   0 4px 16px rgba(26,25,22,0.08), 0 2px 6px rgba(26,25,22,0.05);
+  --shadow-card: 0 8px 32px rgba(26,25,22,0.10), 0 2px 8px rgba(26,25,22,0.06);
+
+  /* Type */
+  --font-ui:     'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-fa:     'Vazirmatn', 'Tahoma', sans-serif;
+
+  /* Radius */
+  --r-sm:   8px;
+  --r-md:   14px;
+  --r-lg:   20px;
+  --r-card: 24px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:          #16150F;
+    --surface:     #211F17;
+    --surface2:    #2A2820;
+    --surface3:    #333028;
+    --fg:          #F0EDE4;
+    --fg2:         #B0AC9E;
+    --fg3:         #706C60;
+    --accent:      #7B7AF0;
+    --accent-soft: rgba(123,122,240,0.12);
+    --accent-mid:  rgba(123,122,240,0.22);
+    --red:         #F06565;
+    --red-soft:    rgba(240,101,101,0.12);
+    --orange:      #F59E0B;
+    --orange-soft: rgba(245,158,11,0.12);
+    --yellow:      #EAB308;
+    --yellow-soft: rgba(234,179,8,0.12);
+    --blue:        #60A5FA;
+    --blue-soft:   rgba(96,165,250,0.12);
+    --green:       #34D399;
+    --green-soft:  rgba(52,211,153,0.12);
+    --border:      rgba(240,237,228,0.08);
+    --border-mid:  rgba(240,237,228,0.14);
+    --shadow-sm:   0 1px 3px rgba(0,0,0,0.20);
+    --shadow-md:   0 4px 16px rgba(0,0,0,0.25);
+    --shadow-card: 0 8px 32px rgba(0,0,0,0.30);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:          #16150F;
+  --surface:     #211F17;
+  --surface2:    #2A2820;
+  --surface3:    #333028;
+  --fg:          #F0EDE4;
+  --fg2:         #B0AC9E;
+  --fg3:         #706C60;
+  --accent:      #7B7AF0;
+  --accent-soft: rgba(123,122,240,0.12);
+  --accent-mid:  rgba(123,122,240,0.22);
+  --red:         #F06565;
+  --red-soft:    rgba(240,101,101,0.12);
+  --orange:      #F59E0B;
+  --orange-soft: rgba(245,158,11,0.12);
+  --yellow:      #EAB308;
+  --yellow-soft: rgba(234,179,8,0.12);
+  --blue:        #60A5FA;
+  --blue-soft:   rgba(96,165,250,0.12);
+  --green:       #34D399;
+  --green-soft:  rgba(52,211,153,0.12);
+  --border:      rgba(240,237,228,0.08);
+  --border-mid:  rgba(240,237,228,0.14);
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.20);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.25);
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.30);
+  color-scheme: dark;
+}
+
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-fa);
+  background: var(--bg);
+  color: var(--fg);
+  direction: rtl;
+  display: flex;
+  flex-direction: column;
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  overflow-x: hidden;
+}
+
+/* ── Typography ── */
+.font-en { font-family: var(--font-ui); direction: ltr; }
+h1,h2,h3 { text-wrap: balance; line-height: 1.25; }
+
+/* ═══════════════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════════════ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--surface);
+  z-index: 100;
+}
+
+.app-header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 50;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.app-logo-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.app-logo-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: -.02em;
+}
+
+.header-stats {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--fg2);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+.stat-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════ */
+.app-nav {
+  display: flex;
+  gap: 2px;
+  padding: 8px max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px));
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.app-nav::-webkit-scrollbar { display: none; }
+
+.nav-tab {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-fa);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--fg3);
+  padding: 8px 14px;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  position: relative;
+  transition: color 0.18s, background 0.18s;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 5px;
+}
+.nav-tab:hover { color: var(--fg2); background: var(--surface2); }
+.nav-tab.active { color: var(--accent); font-weight: 600; }
+.nav-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+}
+.nav-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 100px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════════════════ */
+.screen {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px));
+}
+.screen.active { display: flex; }
+
+/* ═══════════════════════════════════════════════════════
+   LEITNER BOXES STRIP
+═══════════════════════════════════════════════════════ */
+.leitner-strip {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.lbox {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 8px 6px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s;
+}
+.lbox:hover { border-color: var(--border-mid); }
+.lbox-num { font-size: 0.82rem; font-weight: 700; }
+.lbox-days { font-size: 0.55rem; color: var(--fg3); margin-top: 1px; font-weight: 500; }
+.lbox-cnt { font-size: 0.68rem; color: var(--fg2); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.lbox-1 .lbox-num { color: var(--red); }
+.lbox-2 .lbox-num { color: var(--orange); }
+.lbox-3 .lbox-num { color: var(--yellow); }
+.lbox-4 .lbox-num { color: var(--blue); }
+.lbox-5 .lbox-num { color: var(--green); }
+
+/* ═══════════════════════════════════════════════════════
+   DECK FILTER BAR
+═══════════════════════════════════════════════════════ */
+.deck-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.deck-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--fg2);
+  font-family: var(--font-fa);
+  font-size: 0.73rem;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.deck-chip:hover { border-color: var(--border-mid); color: var(--fg); }
+.deck-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════
+   STUDY CARD
+═══════════════════════════════════════════════════════ */
+.card-scene {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 320px;
+}
+
+/* Progress */
+.progress-row {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.progress-track {
+  flex: 1;
+  height: 5px;
+  background: var(--surface2);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #9B8AF4);
+  border-radius: 5px;
+  transition: width 0.4s cubic-bezier(.4,0,.2,1);
+}
+.progress-text {
+  font-size: 0.7rem;
+  color: var(--fg3);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* Card flip */
+.card-wrap {
+  width: 100%;
+  max-width: 460px;
+  height: 260px;
+  perspective: 1400px;
+  cursor: pointer;
+}
+.card-inner {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(.4,0,.2,1);
+}
+.card-inner.flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-card);
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+}
+.card-front {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.card-back {
+  background: linear-gradient(135deg, #EEF0FF 0%, #F3F0FF 100%);
+  border: 1px solid rgba(92,91,229,0.15);
+  transform: rotateY(180deg);
+}
+:root[data-theme="dark"] .card-back,
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .card-back {
+    background: linear-gradient(135deg, #1E1E38 0%, #221A36 100%);
+    border-color: rgba(123,122,240,0.2);
+  }
+}
+
+.card-meta-row {
+  position: absolute;
+  top: 14px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.card-tag {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 2px 8px;
+  border-radius: 100px;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-box-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+}
+.card-face-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg3);
+  margin-bottom: 10px;
+}
+.card-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--fg);
+}
+.card-back .card-text { color: var(--accent); }
+.card-hint {
+  position: absolute;
+  bottom: 16px;
+  font-size: 0.65rem;
+  color: var(--fg3);
+}
+
+/* Speak row */
+.speak-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 460px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.speak-row.show { opacity: 1; pointer-events: all; transform: translateY(0); }
+.speak-btn {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--fg2);
+  font-family: var(--font-fa);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all 0.18s;
+}
+.speak-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.speak-btn.speaking { border-color: var(--green); color: var(--green); background: var(--green-soft); animation: pulse 0.8s infinite; }
+
+/* Answer buttons */
+.ans-row {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  max-width: 460px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.ans-row.show { opacity: 1; pointer-events: all; transform: translateY(0); }
+.ans-btn {
+  flex: 1;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  padding: 10px 4px;
+  font-family: var(--font-fa);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.18s;
+}
+.ans-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.ans-interval { font-size: 0.58rem; font-weight: 500; opacity: 0.7; }
+.btn-again { background: var(--red-soft); color: var(--red); border-color: rgba(224,62,62,0.2); }
+.btn-hard  { background: var(--orange-soft); color: var(--orange); border-color: rgba(217,119,6,0.2); }
+.btn-good  { background: var(--accent-soft); color: var(--accent); border-color: rgba(92,91,229,0.2); }
+.btn-easy  { background: var(--green-soft); color: var(--green); border-color: rgba(5,150,105,0.2); }
+
+/* Empty state */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+}
+.empty-icon { font-size: 3rem; }
+.empty-title { font-size: 1rem; font-weight: 600; color: var(--fg); }
+.empty-sub { font-size: 0.78rem; color: var(--fg3); line-height: 1.7; }
+
+/* ═══════════════════════════════════════════════════════
+   ADD SCREEN
+═══════════════════════════════════════════════════════ */
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 14px;
+}
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-field { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 0.75rem; font-weight: 500; color: var(--fg2); }
+input, textarea, select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--fg);
+  font-family: var(--font-fa);
+  font-size: 0.87rem;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  width: 100%;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+textarea { resize: vertical; min-height: 70px; }
+
+.row-group { display: flex; gap: 8px; }
+.row-group input { flex: 1; min-width: 0; }
+
+.btn-primary {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: var(--font-fa);
+  font-size: 0.87rem;
+  font-weight: 700;
+  padding: 11px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(92,91,229,0.3); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--fg2);
+  font-family: var(--font-fa);
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s;
+  height: 38px;
+  flex-shrink: 0;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.divider-row {
+  display: flex; align-items: center; gap: 10px;
+  margin: 14px 0;
+}
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-text { font-size: 0.68rem; color: var(--fg3); white-space: nowrap; }
+
+.bulk-preview {
+  display: none;
+  font-size: 0.72rem;
+  color: var(--green);
+  background: var(--green-soft);
+  border: 1px solid rgba(5,150,105,0.2);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MANAGE SCREEN
+═══════════════════════════════════════════════════════ */
+.manage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.manage-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg3);
+}
+.card-list { display: flex; flex-direction: column; gap: 6px; }
+.card-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.18s;
+}
+.card-item:hover { border-color: var(--border-mid); }
+.card-item-texts { flex: 1; min-width: 0; }
+.card-item-q {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-item-a {
+  font-size: 0.70rem;
+  color: var(--fg3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.card-item-deck {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 2px 7px;
+  border-radius: 100px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.card-item-box {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.card-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg3);
+  font-size: 0.85rem;
+  padding: 4px 6px;
+  border-radius: var(--r-sm);
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+.card-del:hover { background: var(--red-soft); color: var(--red); }
+
+/* ═══════════════════════════════════════════════════════
+   STATS SCREEN
+═══════════════════════════════════════════════════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-tile-val {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.stat-tile-label {
+  font-size: 0.7rem;
+  color: var(--fg3);
+  margin-top: 5px;
+}
+.stat-tile.accent-tile { background: var(--accent); border-color: transparent; }
+.stat-tile.accent-tile .stat-tile-val,
+.stat-tile.accent-tile .stat-tile-label { color: #fff; }
+
+.leitner-visual {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+.lv-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fg2);
+  margin-bottom: 14px;
+}
+.lv-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.lv-row:last-child { margin-bottom: 0; }
+.lv-box-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  width: 54px;
+  flex-shrink: 0;
+}
+.lv-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.lv-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+}
+.lv-count {
+  font-size: 0.68rem;
+  color: var(--fg3);
+  width: 20px;
+  text-align: start;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════
+   BOX COLOR HELPERS
+═══════════════════════════════════════════════════════ */
+.box-1 { background: var(--red-soft)    !important; color: var(--red)    !important; border-color: rgba(224,62,62,0.2) !important; }
+.box-2 { background: var(--orange-soft) !important; color: var(--orange) !important; border-color: rgba(217,119,6,0.2) !important; }
+.box-3 { background: var(--yellow-soft) !important; color: var(--yellow) !important; border-color: rgba(202,138,4,0.2) !important; }
+.box-4 { background: var(--blue-soft)   !important; color: var(--blue)   !important; border-color: rgba(37,99,235,0.2) !important; }
+.box-5 { background: var(--green-soft)  !important; color: var(--green)  !important; border-color: rgba(5,150,105,0.2) !important; }
+
+/* ═══════════════════════════════════════════════════════
+   QUICK-ADD FLOATING BUTTON & SHEET
+═══════════════════════════════════════════════════════ */
+.fab {
+  position: fixed;
+  left: max(20px, env(safe-area-inset-left, 0px));
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 200;
+  width: 54px; height: 54px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(92,91,229,0.4), 0 2px 6px rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  touch-action: manipulation;
+}
+.fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(92,91,229,0.5); }
+.fab:active { transform: scale(0.95); }
+.fab.open { transform: rotate(45deg); }
+
+/* Sheet overlay */
+.qa-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,25,22,0.35);
+  backdrop-filter: blur(3px);
+  z-index: 190;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.qa-overlay.show { opacity: 1; pointer-events: all; }
+
+/* Bottom sheet */
+.qa-sheet {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 0;
+  z-index: 195;
+  background: var(--surface);
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  border-top: 1px solid var(--border);
+  padding: 0 max(20px, env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(20px, env(safe-area-inset-left,0px));
+  box-shadow: 0 -8px 40px rgba(26,25,22,0.12);
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(.4,0,.2,1);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.qa-sheet.show { transform: translateY(0); }
+
+.qa-handle {
+  width: 36px; height: 4px;
+  background: var(--border-mid);
+  border-radius: 2px;
+  margin: 12px auto 16px;
+}
+.qa-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Smart paste area */
+.qa-paste-zone {
+  background: var(--surface2);
+  border: 1.5px dashed var(--border-mid);
+  border-radius: var(--r-md);
+  padding: 14px;
+  margin-bottom: 12px;
+  transition: border-color 0.18s, background 0.18s;
+  cursor: text;
+}
+.qa-paste-zone:focus-within {
+  border-color: var(--accent);
+  border-style: solid;
+  background: var(--accent-soft);
+}
+.qa-paste-textarea {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-fa);
+  font-size: 0.87rem;
+  color: var(--fg);
+  resize: none;
+  min-height: 60px;
+  padding: 0;
+  box-shadow: none;
+}
+.qa-paste-hint {
+  font-size: 0.68rem;
+  color: var(--fg3);
+  margin-top: 6px;
+  line-height: 1.7;
+}
+.qa-parse-result {
+  display: none;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-direction: column;
+}
+.qa-pair {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 8px 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.qa-pair-q { font-size: 0.82rem; font-weight: 600; color: var(--fg); flex: 1; min-width: 0; }
+.qa-pair-sep { color: var(--fg3); font-size: 0.75rem; }
+.qa-pair-a { font-size: 0.82rem; color: var(--accent); flex: 1; min-width: 0; }
+
+.qa-manual {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.qa-manual input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--fg);
+  font-family: var(--font-fa);
+  font-size: 0.87rem;
+  padding: 9px 12px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.qa-manual input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.qa-deck-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.qa-deck-chip {
+  font-family: var(--font-fa);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--fg2);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.qa-deck-chip.active {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════ */
+#toast {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--fg);
+  color: var(--bg);
+  padding: 9px 18px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s;
+  z-index: 999;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════════════════ */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* dark media fix for card-back */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .card-back {
+    background: linear-gradient(135deg, #1E1E38 0%, #221A36 100%);
+    border-color: rgba(123,122,240,0.2);
+  }
+}
+:root[data-theme="dark"] .card-back {
+  background: linear-gradient(135deg, #1E1E38 0%, #221A36 100%);
+  border-color: rgba(123,122,240,0.2);
+}
 </style>
-</head>
-<body>
-<header>
-  <div class="logo">⚡ فلش‌کارت</div>
-  <div class="hstats">
-    <div class="hstat"><div class="dot" style="background:var(--green)"></div><span id="stat-due">0</span> امروز</div>
-    <div class="hstat"><div class="dot" style="background:var(--accent)"></div><span id="stat-total">0</span> کل</div>
+
+<!-- ══════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════ -->
+<header class="app-header">
+  <div class="app-logo">
+    <div class="app-logo-icon">⚡</div>
+    <span class="app-logo-text">فلش‌کارت</span>
+  </div>
+  <div class="header-stats">
+    <div class="stat-chip">
+      <div class="stat-dot" style="background:var(--green)"></div>
+      <span id="stat-due">0</span> امروز
+    </div>
+    <div class="stat-chip">
+      <div class="stat-dot" style="background:var(--accent)"></div>
+      <span id="stat-total">0</span> کل
+    </div>
   </div>
 </header>
-<nav>
-  <button class="nav-btn active" onclick="showScreen('study')">📖 مطالعه</button>
-  <button class="nav-btn" onclick="showScreen('add')">➕ اضافه</button>
-  <button class="nav-btn" onclick="showScreen('manage')">🗂 مدیریت</button>
-  <button class="nav-btn" onclick="showScreen('reminder')">⏰ یادآور</button>
+
+<!-- ══════════════════════════════════════════
+     NAV
+══════════════════════════════════════════ -->
+<nav class="app-nav">
+  <button class="nav-tab active" onclick="showScreen('study')">📖 مطالعه<span class="nav-badge" id="nav-badge" style="display:none"></span></button>
+  <button class="nav-tab" onclick="showScreen('add')">➕ اضافه</button>
+  <button class="nav-tab" onclick="showScreen('manage')">🗂 مدیریت</button>
+  <button class="nav-tab" onclick="showScreen('stats')">📊 آمار</button>
 </nav>
+
+<!-- ══════════════════════════════════════════
+     STUDY SCREEN
+══════════════════════════════════════════ -->
 <div class="screen active" id="screen-study">
-  <div class="leitner-boxes" id="leitner-boxes"></div>
+
+  <div class="leitner-strip" id="leitner-strip"></div>
   <div class="deck-bar" id="deck-bar"></div>
+
   <div class="card-scene">
+
+    <!-- Empty state -->
     <div class="empty-state" id="empty-state">
       <div class="empty-icon">🎉</div>
-      <div style="font-size:1rem;font-weight:600">همه کارت‌های امروز تموم شد!</div>
-      <div style="font-size:.78rem">فردا ساعت ۱۱ یادت باشه 📚</div>
+      <div class="empty-title">همه کارت‌های امروز تموم شد!</div>
+      <div class="empty-sub">جعبه‌ها بروزند 📦<br>فردا دوباره مرور کن</div>
     </div>
-    <div class="prog-wrap" id="prog-wrap" style="display:none"><div class="prog-fill" id="prog-fill"></div></div>
-    <div class="card-counter" id="card-counter" style="display:none"></div>
+
+    <!-- Progress -->
+    <div class="progress-row" id="progress-row" style="display:none">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <span class="progress-text" id="progress-text"></span>
+    </div>
+
+    <!-- Card -->
     <div class="card-wrap" id="card-wrap" style="display:none" onclick="flipCard()">
       <div class="card-inner" id="card-inner">
+        <!-- Front -->
         <div class="card-face card-front">
-          <div class="card-meta"><div class="card-tag" id="card-tag"></div><div class="card-box-badge" id="card-box-badge"></div></div>
-          <div class="card-label">سوال</div>
+          <div class="card-meta-row">
+            <span class="card-tag" id="card-tag"></span>
+            <span class="card-box-badge" id="card-box"></span>
+          </div>
+          <div class="card-face-label">سوال</div>
           <div class="card-text" id="card-q"></div>
-          <div style="margin-top:8px;font-size:.62rem;color:var(--muted)">برای دیدن جواب بزن 👆</div>
+          <div class="card-hint">بزن تا جواب ببینی 👆</div>
         </div>
+        <!-- Back -->
         <div class="card-face card-back">
-          <div class="card-label">جواب</div>
+          <div class="card-face-label" style="color:var(--accent);opacity:.7">جواب</div>
           <div class="card-text" id="card-a"></div>
         </div>
       </div>
     </div>
-    <div class="flip-hint" id="flip-hint" style="display:none">روی کارت بزن تا جواب ببینی</div>
+
+    <!-- Speak -->
     <div class="speak-row" id="speak-row">
-      <button class="speak-side-btn" id="speak-q" onclick="speakCard('q')">🔊 <span>جلو</span></button>
-      <button class="speak-side-btn" id="speak-a" onclick="speakCard('a')">🔊 <span>پشت</span></button>
+      <button class="speak-btn" id="spk-q" onclick="speak('q')">🔊 جلو</button>
+      <button class="speak-btn" id="spk-a" onclick="speak('a')">🔊 پشت</button>
     </div>
+
+    <!-- Answer -->
     <div class="ans-row" id="ans-row">
-      <button class="ans-btn ans-again" onclick="answer(0)"><span>دوباره</span><span class="ans-interval" id="int-again">جعبه ۱</span></button>
-      <button class="ans-btn ans-hard" onclick="answer(1)"><span>سخت</span><span class="ans-interval" id="int-hard"></span></button>
-      <button class="ans-btn ans-good" onclick="answer(2)"><span>خوب</span><span class="ans-interval" id="int-good"></span></button>
-      <button class="ans-btn ans-easy" onclick="answer(3)"><span>راحت</span><span class="ans-interval" id="int-easy"></span></button>
+      <button class="ans-btn btn-again" onclick="answer(0)">
+        دوباره<span class="ans-interval" id="int-0">جعبه ۱</span>
+      </button>
+      <button class="ans-btn btn-hard" onclick="answer(1)">
+        سخت<span class="ans-interval" id="int-1"></span>
+      </button>
+      <button class="ans-btn btn-good" onclick="answer(2)">
+        خوب<span class="ans-interval" id="int-2"></span>
+      </button>
+      <button class="ans-btn btn-easy" onclick="answer(3)">
+        راحت<span class="ans-interval" id="int-3"></span>
+      </button>
     </div>
+
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════
+     ADD SCREEN
+══════════════════════════════════════════ -->
 <div class="screen" id="screen-add">
   <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column">
-    <div class="ai-box" style="margin-bottom:14px">
-      <div class="ai-title">📲 ایمپورت از تلگرام یا هر جایی</div>
-      <div style="font-size:.73rem;color:var(--muted);margin-bottom:10px;line-height:1.9">
-        توی تلگرام به خودت پیام بده، کپی کن، اینجا paste کن:<br>
-        <span style="color:var(--accent);font-weight:600">خط ۱ = جلوی کارت</span><br>
-        <span style="color:#a8d8ff;font-weight:600">خط ۲ = پشت کارت</span>
+
+    <!-- Bulk import -->
+    <div class="section-card">
+      <div class="section-label">📲 ایمپورت گروهی</div>
+      <div style="font-size:0.73rem;color:var(--fg3);margin-bottom:10px;line-height:1.9">
+        هر جفت در دو خط:<br>
+        <span style="color:var(--fg2);font-weight:600">خط فرد = جلوی کارت</span> &nbsp;|&nbsp;
+        <span style="color:var(--accent);font-weight:600">خط زوج = پشت کارت</span>
       </div>
-      <div class="form-group" style="margin-bottom:9px"><label>دسته‌بندی</label><select id="bulk-deck"></select></div>
-      <div class="form-group" style="margin-bottom:9px">
-        <textarea id="bulk-input" style="min-height:150px;font-size:.88rem;line-height:2" placeholder="Apple&#10;سیب 🍎&#10;Good morning&#10;صباح الخير&#10;مرحباً&#10;سلام / خوش آمدید&#10;..."></textarea>
+      <div class="form-field" style="margin-bottom:8px">
+        <label class="form-label">دسته‌بندی</label>
+        <select id="bulk-deck"></select>
       </div>
-      <div id="bulk-preview-info" style="display:none;font-size:.73rem;color:var(--green);margin-bottom:8px;padding:7px 10px;background:rgba(66,224,184,0.08);border-radius:8px;border:1px solid rgba(66,224,184,0.2)"></div>
-      <button class="btn-primary" style="background:linear-gradient(135deg,#42e0b8,#2ec49c);color:#0a2a20" onclick="saveBulk()">✅ ایمپورت کارت‌ها</button>
+      <div class="form-field">
+        <textarea id="bulk-input" style="min-height:140px;line-height:2"
+          placeholder="Apple&#10;سیب 🍎&#10;Good morning&#10;صبح بخیر&#10;مرحباً&#10;سلام / خوش آمدید"></textarea>
+        <div class="bulk-preview" id="bulk-preview"></div>
+      </div>
+      <button class="btn-primary" style="background:var(--green)" onclick="saveBulk()">✅ ایمپورت کارت‌ها</button>
     </div>
-    <div class="divider"><div class="divider-line"></div><div class="divider-text">یا یک کارت دستی اضافه کن</div><div class="divider-line"></div></div>
-    <div class="form-group"><label>دسته‌بندی</label><select id="add-deck"></select>
-      <div class="row" style="margin-top:7px"><input id="new-deck-name" placeholder="دسته‌بندی جدید..."><button class="btn-sm" onclick="addDeck()">+ اضافه</button></div>
+
+    <!-- Divider -->
+    <div class="divider-row">
+      <div class="divider-line"></div>
+      <span class="divider-text">یا یک کارت دستی</span>
+      <div class="divider-line"></div>
     </div>
-    <div class="form-group"><label>سوال</label><textarea id="add-q" placeholder="سوال یا کلمه..."></textarea></div>
-    <div class="form-group"><label>جواب</label><textarea id="add-a" placeholder="جواب یا معنی..."></textarea></div>
-    <button class="btn-primary" onclick="addCard()">✅ ذخیره</button>
-    <div style="height:20px"></div>
+
+    <!-- Manual add -->
+    <div class="section-card">
+      <div class="section-label">✍️ کارت دستی</div>
+      <div class="form-field">
+        <label class="form-label">دسته‌بندی</label>
+        <select id="add-deck"></select>
+        <div class="row-group" style="margin-top:7px">
+          <input id="new-deck" placeholder="دسته‌بندی جدید..." />
+          <button class="btn-secondary" onclick="addDeck()">+ اضافه</button>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">جلوی کارت (سوال)</label>
+        <textarea id="add-q" placeholder="کلمه، عبارت یا سوال..."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">پشت کارت (جواب)</label>
+        <textarea id="add-a" placeholder="معنی، جواب یا توضیح..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="addCard()">✅ ذخیره کارت</button>
+    </div>
+
+    <div style="height:16px"></div>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════
+     MANAGE SCREEN
+══════════════════════════════════════════ -->
 <div class="screen" id="screen-manage">
-  <div class="section-title">همه کارت‌ها — <span id="manage-count">0</span> عدد</div>
+  <div class="manage-header">
+    <span class="manage-title">همه کارت‌ها — <span id="manage-count">0</span> عدد</span>
+  </div>
   <div class="card-list" id="card-list"></div>
 </div>
-<div class="screen" id="screen-reminder">
-  <div class="reminder-card">
-    <div style="font-size:.9rem;font-weight:700;margin-bottom:14px">⏰ یادآور روزانه ساعت ۱۱</div>
-    <div class="reminder-step"><div class="reminder-step-num">۱</div><p>اپ <b>یادآورها</b> (Reminders) رو باز کن</p></div>
-    <div class="reminder-step"><div class="reminder-step-num">۲</div><p>یادآور جدید با نام <b>«📚 وقت فلش‌کارت!»</b> بساز</p></div>
-    <div class="reminder-step"><div class="reminder-step-num">۳</div><p>ساعت رو <b>۱۱:۰۰</b> و تکرار رو روی <b>روزانه</b> بذار</p></div>
-    <div class="info-box">
-      <div style="font-size:.73rem;color:var(--accent);margin-bottom:8px">📦 سیستم لایتنر</div>
-      <div style="font-size:.77rem;color:var(--muted);line-height:1.9">
-        📦۱ قرمز → هر روز | 📦۲ نارنجی → هر ۲ روز<br>
-        📦۳ زرد → هر ۴ روز | 📦۴ آبی → هر ۸ روز<br>
-        📦۵ سبز → هر ۱۶ روز<br><br>
-        ✅ جواب درست → جعبه بالاتر<br>
-        ❌ جواب غلط → برمیگرده جعبه ۱
-      </div>
+
+<!-- ══════════════════════════════════════════
+     STATS SCREEN
+══════════════════════════════════════════ -->
+<div class="screen" id="screen-stats">
+
+  <div class="stats-grid">
+    <div class="stat-tile accent-tile">
+      <div class="stat-tile-val" id="s-due">0</div>
+      <div class="stat-tile-label">کارت امروز</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-val" id="s-total">0</div>
+      <div class="stat-tile-label">کل کارت‌ها</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-val" id="s-learned">0</div>
+      <div class="stat-tile-label">یادگرفته‌شده (جعبه ۵)</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-tile-val" id="s-streak">0</div>
+      <div class="stat-tile-label">روزهای متوالی</div>
+    </div>
+  </div>
+
+  <div class="leitner-visual">
+    <div class="lv-title">توزیع کارت‌ها در جعبه‌های لایتنر</div>
+    <div id="lv-rows"></div>
+  </div>
+
+  <div class="section-card" style="margin-bottom:0">
+    <div class="section-label">📦 سیستم لایتنر</div>
+    <div style="font-size:0.77rem;color:var(--fg2);line-height:2">
+      📦۱ قرمز → هر روز<br>
+      📦۲ نارنجی → هر ۲ روز<br>
+      📦۳ زرد → هر ۴ روز<br>
+      📦۴ آبی → هر ۸ روز<br>
+      📦۵ سبز → هر ۱۶ روز
+    </div>
+    <div style="font-size:0.73rem;color:var(--fg3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);line-height:1.8">
+      ✅ خوب / راحت → جعبه بالاتر<br>
+      ❌ دوباره / سخت → جعبه پایین‌تر
     </div>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════
+     FLOATING ADD BUTTON
+══════════════════════════════════════════ -->
+<button class="fab" id="fab" onclick="toggleQA()" aria-label="افزودن کارت">+</button>
+
+<!-- Overlay -->
+<div class="qa-overlay" id="qa-overlay" onclick="closeQA()"></div>
+
+<!-- Quick-Add Sheet -->
+<div class="qa-sheet" id="qa-sheet">
+  <div class="qa-handle"></div>
+  <div class="qa-title">⚡ افزودن سریع کارت</div>
+
+  <!-- Deck selector -->
+  <div class="qa-deck-row" id="qa-deck-row"></div>
+
+  <!-- Smart paste zone -->
+  <div class="qa-paste-zone">
+    <textarea class="qa-paste-textarea" id="qa-paste" rows="3"
+      placeholder="اینجا paste کن یا تایپ کن..."></textarea>
+    <div class="qa-paste-hint" id="qa-hint">
+      یه خط = فقط سوال | دو خط = سوال + جواب | چند جفت = ایمپورت گروهی<br>
+      یا فرمت: <span style="color:var(--accent)">سوال = جواب</span> یا <span style="color:var(--accent)">سوال | جواب</span>
+    </div>
+  </div>
+
+  <!-- Parsed preview -->
+  <div class="qa-parse-result" id="qa-parse-result"></div>
+
+  <!-- Manual fallback -->
+  <div class="qa-manual" id="qa-manual" style="display:none">
+    <input id="qa-q" placeholder="جلوی کارت (سوال)" />
+    <input id="qa-a" placeholder="پشت کارت (جواب)" />
+  </div>
+
+  <button class="btn-primary" id="qa-save-btn" onclick="qaSave()">✅ ذخیره</button>
+</div>
+
 <div id="toast"></div>
-<footer style="z-index:10;text-align:center;padding:14px 20px;border-top:1px solid var(--border);background:rgba(15,15,19,.9);font-size:.7rem;color:var(--muted);line-height:1.8">طراحی و تولید <span style="color:var(--accent);font-weight:700">بهنام مرندی</span><br>© ۱۴۰۴ — تمامی حقوق محفوظ است</footer>
+
 <script>
-const KEY="fc_v4";
-const INTERVALS=[0,1,2,4,8,16];
-const PRESET_CARDS=[];
+/* ══════════════════════════════════════════
+   DATA LAYER
+══════════════════════════════════════════ */
+const KEY = 'fc_v5';
+const INTERVALS = [0, 1, 2, 4, 8, 16]; // days per box
 
-function load(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(KEY));
-    if(saved) return saved;
-  }catch(e){}
-  return def();
+function defaultData() {
+  return {
+    decks: ['زبان انگلیسی', 'عربی', 'عمومی'],
+    cards: [],
+    streak: 0,
+    lastStudy: null
+  };
 }
 
-function def(){
-  return{decks:['زبان انگلیسی','عربی','عمومی'],cards:[]};
-}
-
-function load(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(KEY));
-    if(saved){
-      // merge preset cards that don't exist yet
-      const existingIds=new Set(saved.cards.map(c=>c.id));
-      const newPreset=PRESET_CARDS.filter(c=>!existingIds.has(c.id));
-      if(newPreset.length>0){
-        saved.cards=[...saved.cards,...newPreset];
-        // add new decks
-        newPreset.forEach(c=>{if(!saved.decks.includes(c.deck))saved.decks.push(c.deck)});
-        localStorage.setItem(KEY,JSON.stringify(saved));
-      }
-      return saved;
+function loadData() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      // migration: ensure streak field
+      if (d.streak === undefined) d.streak = 0;
+      if (d.lastStudy === undefined) d.lastStudy = null;
+      return d;
     }
-  }catch(e){}
-  return def();
+  } catch(e) {}
+  return defaultData();
 }
 
-function def(){
-  const decks=[...new Set(PRESET_CARDS.map(c=>c.deck))];
-  return{decks,cards:PRESET_CARDS.map(c=>({...c,due:Date.now()}))};
-}
-
-function save(){
-  try{
-    localStorage.setItem(KEY,JSON.stringify(data));
-  }catch(e){
+function saveData() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(data));
+  } catch(e) {
     toast('⚠️ خطا در ذخیره — حافظه پر یا Private Mode');
-    console.error('Save error:',e);
   }
 }
 
-let data=load(),activeDeck="همه",queue=[],cidx=0,flipped=false;
+let data = loadData();
+let activeDeck = 'همه';
+let queue = [];
+let cidx = 0;
+let flipped = false;
 
-function showScreen(n){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
-  document.getElementById("screen-"+n).classList.add("active");
-  ["study","add","manage","reminder"].forEach((s,i)=>{if(s===n)document.querySelectorAll(".nav-btn")[i].classList.add("active")});
-  if(n==="study")renderStudy();
-  if(n==="add")renderForms();
-  if(n==="manage")renderManage();
+/* ══════════════════════════════════════════
+   SCREEN ROUTING
+══════════════════════════════════════════ */
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  const tabs = document.querySelectorAll('.nav-tab');
+  const idx = ['study','add','manage','stats'].indexOf(name);
+  if (idx >= 0) tabs[idx].classList.add('active');
+  if (name === 'study') renderStudy();
+  if (name === 'add') populateDecks();
+  if (name === 'manage') renderManage();
+  if (name === 'stats') renderStats();
 }
 
-function bclass(b){return"box-"+(b||1)}
-
-function renderLeitner(){
-  const counts=[0,0,0,0,0];
-  data.cards.forEach(c=>counts[(c.box||1)-1]++);
-  document.getElementById("leitner-boxes").innerHTML=[1,2,3,4,5].map((b,i)=>`
-    <div class="lbox lbox-${b}"><div class="lbox-num">📦${b}</div><div class="lbox-label">${["روزانه","۲روز","۴روز","۸روز","۱۶روز"][i]}</div><div class="lbox-count">${counts[i]}</div></div>`).join("");
+/* ══════════════════════════════════════════
+   LEITNER STRIP
+══════════════════════════════════════════ */
+function renderLeitner() {
+  const counts = [0,0,0,0,0];
+  data.cards.forEach(c => counts[(c.box||1)-1]++);
+  const labels = ['روزانه','۲ روز','۴ روز','۸ روز','۱۶ روز'];
+  document.getElementById('leitner-strip').innerHTML = [1,2,3,4,5].map((b,i) => `
+    <div class="lbox lbox-${b}">
+      <div class="lbox-num">📦${toPersian(b)}</div>
+      <div class="lbox-days">${labels[i]}</div>
+      <div class="lbox-cnt">${toPersian(counts[i])}</div>
+    </div>`).join('');
 }
 
-function getDue(){
-  const n=Date.now();
-  let c=data.cards.filter(x=>(x.due||0)<=n);
-  if(activeDeck!=="همه")c=c.filter(x=>x.deck===activeDeck);
-  return c;
+/* ══════════════════════════════════════════
+   DECK BAR
+══════════════════════════════════════════ */
+function renderDeckBar() {
+  const decks = ['همه', ...data.decks];
+  document.getElementById('deck-bar').innerHTML = decks.map(d => `
+    <button class="deck-chip ${d===activeDeck?'active':''}" onclick="selectDeck('${escQ(d)}')">${d}</button>`).join('');
 }
 
-function renderStudy(){renderLeitner();renderDeckBar();updateStats();queue=getDue();cidx=0;showCard()}
+function selectDeck(d) { activeDeck = d; renderStudy(); }
 
-function renderDeckBar(){
-  document.getElementById("deck-bar").innerHTML=["همه",...data.decks].map(d=>
-    `<button class="deck-chip ${d===activeDeck?"active":""}" onclick="selectDeck('${d.replace(/'/g,"\'")}'">${d}</button>`).join("");
+/* ══════════════════════════════════════════
+   DUE CARDS
+══════════════════════════════════════════ */
+function getDue() {
+  const now = Date.now();
+  let cards = data.cards.filter(c => (c.due||0) <= now);
+  if (activeDeck !== 'همه') cards = cards.filter(c => c.deck === activeDeck);
+  return cards;
 }
 
-function selectDeck(d){activeDeck=d;renderStudy()}
+/* ══════════════════════════════════════════
+   STUDY RENDER
+══════════════════════════════════════════ */
+function renderStudy() {
+  renderLeitner();
+  renderDeckBar();
+  updateStats();
+  queue = getDue();
+  cidx = 0;
+  showCard();
+}
 
-function showCard(){
-  const empty=document.getElementById("empty-state");
-  const wrap=document.getElementById("card-wrap");
-  const pw=document.getElementById("prog-wrap");
-  const cc=document.getElementById("card-counter");
-  const hint=document.getElementById("flip-hint");
-  const ar=document.getElementById("ans-row");
-  const sr=document.getElementById("speak-row");
-  if(queue.length===0){
-    empty.style.display="flex";wrap.style.display="none";
-    pw.style.display="none";cc.style.display="none";
-    hint.style.display="none";ar.classList.remove("visible");
-    sr.classList.remove("visible");return;
+function showCard() {
+  const empty = document.getElementById('empty-state');
+  const wrap  = document.getElementById('card-wrap');
+  const progR = document.getElementById('progress-row');
+  const ansR  = document.getElementById('ans-row');
+  const spkR  = document.getElementById('speak-row');
+
+  if (queue.length === 0) {
+    empty.style.display = 'flex';
+    wrap.style.display = 'none';
+    progR.style.display = 'none';
+    ansR.classList.remove('show');
+    spkR.classList.remove('show');
+    return;
   }
-  empty.style.display="none";wrap.style.display="block";
-  pw.style.display="block";cc.style.display="block";hint.style.display="block";
-  sr.classList.add("visible");
-  const card=queue[cidx];
-  document.getElementById("card-q").textContent=card.q;
-  document.getElementById("card-a").textContent=card.a;
-  document.getElementById("card-tag").textContent=card.deck;
-  const bb=document.getElementById("card-box-badge");
-  bb.textContent="📦"+(card.box||1);bb.className="card-box-badge "+bclass(card.box);
-  const all=activeDeck==="همه"?data.cards:data.cards.filter(c=>c.deck===activeDeck);
-  const done=all.length-getDue().length;
-  document.getElementById("prog-fill").style.width=(all.length?(done/all.length*100):0)+"%";
-  cc.textContent=`${cidx+1} از ${queue.length} کارت امروز`;
-  flipped=false;
-  const inner=document.getElementById("card-inner");
-  inner.style.transition='none';
-  inner.classList.remove("flipped");
-  // force reflow then restore transition
-  inner.offsetHeight;
-  inner.style.transition='';
-  ar.classList.remove("visible");
-  const b=card.box||1;
-  document.getElementById("int-again").textContent="جعبه ۱";
-  document.getElementById("int-hard").textContent=b>1?`جعبه ${b-1}`:"جعبه ۱";
-  document.getElementById("int-good").textContent=b<5?`جعبه ${b+1}`:"جعبه ۵ ✓";
-  document.getElementById("int-easy").textContent=b<5?`جعبه ${Math.min(5,b+2)}`:"جعبه ۵ ✓";
+
+  empty.style.display = 'none';
+  wrap.style.display = 'block';
+  progR.style.display = 'flex';
+  spkR.classList.add('show');
+
+  const card = queue[cidx];
+  document.getElementById('card-q').textContent = card.q;
+  document.getElementById('card-a').textContent = card.a;
+  document.getElementById('card-tag').textContent = card.deck;
+
+  const bb = document.getElementById('card-box');
+  const box = card.box || 1;
+  bb.textContent = '📦' + toPersian(box);
+  bb.className = 'card-box-badge box-' + box;
+
+  // progress
+  const allInDeck = activeDeck === 'همه' ? data.cards : data.cards.filter(c => c.deck === activeDeck);
+  const doneCount = allInDeck.length - getDue().length;
+  const pct = allInDeck.length ? (doneCount / allInDeck.length * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${toPersian(cidx+1)} از ${toPersian(queue.length)}`;
+
+  // intervals display
+  document.getElementById('int-0').textContent = 'جعبه ۱';
+  document.getElementById('int-1').textContent = box > 1 ? `جعبه ${toPersian(box-1)}` : 'جعبه ۱';
+  document.getElementById('int-2').textContent = box < 5 ? `جعبه ${toPersian(box+1)}` : 'جعبه ۵ ✓';
+  document.getElementById('int-3').textContent = box < 5 ? `جعبه ${toPersian(Math.min(5,box+2))}` : 'جعبه ۵ ✓';
+
+  // reset flip (no transition on reset)
+  flipped = false;
+  const inner = document.getElementById('card-inner');
+  inner.style.transition = 'none';
+  inner.classList.remove('flipped');
+  inner.offsetHeight; // reflow
+  inner.style.transition = '';
+  ansR.classList.remove('show');
 }
 
-function flipCard(){
-  if(flipped)return;flipped=true;
-  document.getElementById("card-inner").classList.add("flipped");
-  document.getElementById("flip-hint").style.display="none";
-  document.getElementById("ans-row").classList.add("visible");
+function flipCard() {
+  if (flipped) return;
+  flipped = true;
+  document.getElementById('card-inner').classList.add('flipped');
+  document.getElementById('ans-row').classList.add('show');
 }
 
-function answer(q){
-  const card=queue[cidx];
-  const idx=data.cards.findIndex(c=>c.id===card.id);
-  if(idx===-1)return;
-  const c=data.cards[idx];
-  const DAY=86400000,now=Date.now();
-  if(q===0){c.box=1;c.due=now+60000}
-  else if(q===1){c.box=Math.max(1,(c.box||1)-1);c.due=now+INTERVALS[c.box]*DAY}
-  else if(q===2){c.box=Math.min(5,(c.box||1)+1);c.due=now+INTERVALS[c.box]*DAY}
-  else{c.box=Math.min(5,(c.box||1)+2);c.due=now+INTERVALS[c.box]*DAY}
-  save();renderLeitner();
-  if(q===0){queue.splice(cidx,1);queue.push(card);if(cidx>=queue.length)cidx=0}
-  else{queue.splice(cidx,1);if(cidx>=queue.length)cidx=Math.max(0,queue.length-1)}
-  updateStats();showCard();
+function answer(q) {
+  const card = queue[cidx];
+  const idx = data.cards.findIndex(c => c.id === card.id);
+  if (idx === -1) return;
+
+  const c = data.cards[idx];
+  const DAY = 86400000;
+  const now = Date.now();
+
+  if (q === 0) {
+    // again → box 1, 1 min
+    c.box = 1;
+    c.due = now + 60_000;
+  } else if (q === 1) {
+    // hard → stay or go down 1
+    c.box = Math.max(1, (c.box||1) - 1);
+    c.due = now + INTERVALS[c.box] * DAY;
+  } else if (q === 2) {
+    // good → up 1
+    c.box = Math.min(5, (c.box||1) + 1);
+    c.due = now + INTERVALS[c.box] * DAY;
+  } else {
+    // easy → up 2
+    c.box = Math.min(5, (c.box||1) + 2);
+    c.due = now + INTERVALS[c.box] * DAY;
+  }
+
+  // streak
+  const today = new Date().toDateString();
+  if (data.lastStudy !== today) {
+    data.streak = (data.lastStudy === new Date(Date.now()-86400000).toDateString()) ? data.streak + 1 : 1;
+    data.lastStudy = today;
+  }
+
+  saveData();
+  renderLeitner();
+
+  if (q === 0) {
+    // push to end
+    queue.splice(cidx, 1);
+    queue.push(card);
+    if (cidx >= queue.length) cidx = 0;
+  } else {
+    queue.splice(cidx, 1);
+    if (cidx >= queue.length) cidx = Math.max(0, queue.length - 1);
+  }
+
+  updateStats();
+  showCard();
 }
 
-function renderForms(){
-  ["add-deck","bulk-deck"].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.innerHTML=data.decks.map(d=>`<option value="${d}">${d}</option>`).join("");
+/* ══════════════════════════════════════════
+   ADD CARDS
+══════════════════════════════════════════ */
+function populateDecks() {
+  ['add-deck','bulk-deck'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = data.decks.map(d => `<option value="${escQ(d)}">${d}</option>`).join('');
   });
 }
 
+function addDeck() {
+  const n = document.getElementById('new-deck').value.trim();
+  if (!n) return;
+  if (data.decks.includes(n)) { toast('این دسته قبلاً هست'); return; }
+  data.decks.push(n);
+  saveData();
+  document.getElementById('new-deck').value = '';
+  populateDecks();
+  toast('✅ دسته اضافه شد');
+}
 
-function saveBulk(){
-  const raw=document.getElementById("bulk-input").value;
-  const deck=document.getElementById("bulk-deck").value||data.decks[0];
-  const lines=raw.split("\n").map(l=>l.trim()).filter(l=>l);
-  if(lines.length<2){toast("⚠️ حداقل یک جفت بنویس");return}
-  let added=0;
-  for(let i=0;i+1<lines.length;i+=2){
-    data.cards.push({id:Date.now()+Math.random(),deck,q:lines[i],a:lines[i+1],box:1,due:Date.now()});
+function addCard() {
+  const q = document.getElementById('add-q').value.trim();
+  const a = document.getElementById('add-a').value.trim();
+  const deck = document.getElementById('add-deck').value;
+  if (!q || !a) { toast('⚠️ سوال و جواب رو پر کن'); return; }
+  data.cards.push({ id: Date.now() + Math.random(), deck, q, a, box: 1, due: Date.now() });
+  saveData();
+  document.getElementById('add-q').value = '';
+  document.getElementById('add-a').value = '';
+  updateStats();
+  toast('✅ کارت ذخیره شد!');
+}
+
+function saveBulk() {
+  const raw = document.getElementById('bulk-input').value;
+  const deck = document.getElementById('bulk-deck').value || data.decks[0];
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l);
+  if (lines.length < 2) { toast('⚠️ حداقل یک جفت بنویس'); return; }
+  let added = 0;
+  for (let i = 0; i+1 < lines.length; i += 2) {
+    data.cards.push({ id: Date.now() + Math.random() + i, deck, q: lines[i], a: lines[i+1], box: 1, due: Date.now() });
     added++;
   }
-  if(!added){toast("⚠️ فرمت درست نیست");return}
-  save();updateStats();
-  document.getElementById("bulk-input").value="";
-  document.getElementById("bulk-preview-info").style.display="none";
-  toast("✅ "+added+" کارت اضافه شد!");
+  if (!added) { toast('⚠️ فرمت درست نیست'); return; }
+  saveData();
+  updateStats();
+  document.getElementById('bulk-input').value = '';
+  document.getElementById('bulk-preview').style.display = 'none';
+  toast('✅ ' + toPersian(added) + ' کارت اضافه شد!');
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
-  const bi=document.getElementById("bulk-input");
-  const info=document.getElementById("bulk-preview-info");
-  if(bi){bi.addEventListener("input",()=>{
-    const lines=bi.value.split("\n").map(l=>l.trim()).filter(l=>l);
-    const hasPipe=lines.some(l=>l.includes('|'));
-    const count=hasPipe?lines.filter(l=>l.includes('|')).length:Math.floor(lines.length/2);
-    if(count>0){info.style.display="block";info.textContent="✅ "+count+" کارت آماده ایمپورت";}else{info.style.display="none";}
-  });}
+// live preview
+document.addEventListener('DOMContentLoaded', () => {
+  const bi = document.getElementById('bulk-input');
+  const bp = document.getElementById('bulk-preview');
+  if (bi) {
+    bi.addEventListener('input', () => {
+      const lines = bi.value.split('\n').map(l => l.trim()).filter(l => l);
+      const count = Math.floor(lines.length / 2);
+      if (count > 0) {
+        bp.style.display = 'block';
+        bp.textContent = '✅ ' + toPersian(count) + ' کارت آماده ایمپورت';
+      } else {
+        bp.style.display = 'none';
+      }
+    });
+  }
+  populateDecks();
 });
-function addDeck(){
-  const n=document.getElementById("new-deck-name").value.trim();
-  if(!n)return;
-  if(data.decks.includes(n)){toast("این دسته قبلاً هست");return}
-  data.decks.push(n);save();
-  document.getElementById("new-deck-name").value="";
-  renderForms();toast("✅ دسته اضافه شد");
+
+/* ══════════════════════════════════════════
+   MANAGE
+══════════════════════════════════════════ */
+function renderManage() {
+  document.getElementById('manage-count').textContent = toPersian(data.cards.length);
+  const list = document.getElementById('card-list');
+  if (!data.cards.length) {
+    list.innerHTML = '<div style="color:var(--fg3);text-align:center;padding:40px 0">هنوز کارتی نداری</div>';
+    return;
+  }
+  list.innerHTML = [...data.cards].reverse().map(c => `
+    <div class="card-item">
+      <div class="card-item-texts">
+        <div class="card-item-q">${esc(c.q)}</div>
+        <div class="card-item-a">${esc(c.a)}</div>
+      </div>
+      <span class="card-item-deck">${esc(c.deck)}</span>
+      <span class="card-item-box box-${c.box||1}">📦${toPersian(c.box||1)}</span>
+      <button class="card-del" onclick="delCard(${JSON.stringify(c.id)})">🗑</button>
+    </div>`).join('');
 }
 
-function addCard(){
-  const q=document.getElementById("add-q").value.trim();
-  const a=document.getElementById("add-a").value.trim();
-  const deck=document.getElementById("add-deck").value;
-  if(!q||!a){toast("⚠️ سوال و جواب رو پر کن");return}
-  data.cards.push({id:Date.now(),deck,q,a,box:1,due:Date.now()});
-  save();document.getElementById("add-q").value="";document.getElementById("add-a").value="";
-  updateStats();toast("✅ کارت ذخیره شد!");
+function delCard(id) {
+  data.cards = data.cards.filter(c => c.id !== id);
+  saveData();
+  renderManage();
+  updateStats();
+  toast('🗑 حذف شد');
 }
 
-function renderManage(){
-  document.getElementById("manage-count").textContent=data.cards.length;
-  const list=document.getElementById("card-list");
-  if(!data.cards.length){list.innerHTML="<div style=\"color:var(--muted);text-align:center;padding:30px\">هنوز کارتی نداری</div>";return}
-  list.innerHTML=data.cards.map(c=>`
-    <div class="cli">
-      <div class="cli-texts"><div class="cli-q">${c.q}</div><div class="cli-a">${c.a}</div></div>
-      <div class="cli-deck">${c.deck}</div>
-      <div class="cli-box ${bclass(c.box||1)}">📦${c.box||1}</div>
-      <button class="cli-del" onclick="delCard(${c.id})">🗑</button>
-    </div>`).join("");
+/* ══════════════════════════════════════════
+   STATS
+══════════════════════════════════════════ */
+function renderStats() {
+  const now = Date.now();
+  const total = data.cards.length;
+  const due = data.cards.filter(c => (c.due||0) <= now).length;
+  const learned = data.cards.filter(c => (c.box||1) === 5).length;
+  const streak = data.streak || 0;
+
+  document.getElementById('s-due').textContent = toPersian(due);
+  document.getElementById('s-total').textContent = toPersian(total);
+  document.getElementById('s-learned').textContent = toPersian(learned);
+  document.getElementById('s-streak').textContent = toPersian(streak);
+
+  // Leitner visual bars
+  const counts = [0,0,0,0,0];
+  data.cards.forEach(c => counts[(c.box||1)-1]++);
+  const max = Math.max(...counts, 1);
+  const colors = ['var(--red)','var(--orange)','var(--yellow)','var(--blue)','var(--green)'];
+  const labels = ['📦۱ روزانه','📦۲ دو روز','📦۳ چهار روز','📦۴ هشت روز','📦۵ شانزده روز'];
+
+  document.getElementById('lv-rows').innerHTML = counts.map((cnt, i) => `
+    <div class="lv-row">
+      <span class="lv-box-label" style="color:${colors[i]}">${labels[i]}</span>
+      <div class="lv-bar-track">
+        <div class="lv-bar-fill" style="width:${cnt/max*100}%;background:${colors[i]}"></div>
+      </div>
+      <span class="lv-count">${toPersian(cnt)}</span>
+    </div>`).join('');
 }
 
-function delCard(id){
-  data.cards=data.cards.filter(c=>c.id!==id);
-  save();renderManage();updateStats();toast("🗑 حذف شد");
+/* ══════════════════════════════════════════
+   GLOBAL STATS
+══════════════════════════════════════════ */
+function updateStats() {
+  const now = Date.now();
+  const due = data.cards.filter(c => (c.due||0) <= now).length;
+  document.getElementById('stat-due').textContent = toPersian(due);
+  document.getElementById('stat-total').textContent = toPersian(data.cards.length);
+  // nav badge
+  const badge = document.getElementById('nav-badge');
+  if (due > 0) { badge.style.display = ''; badge.textContent = toPersian(due); }
+  else { badge.style.display = 'none'; }
 }
 
-function updateStats(){
-  document.getElementById("stat-total").textContent=data.cards.length;
-  document.getElementById("stat-due").textContent=data.cards.filter(c=>(c.due||0)<=Date.now()).length;
-}
-
-let tt;
-function toast(msg){
-  const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
-  clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2200);
-}
-
-// ── SPEECH ───────────────────────────────────────────────
-function detectLang(text){
-  if(/[\u0600-\u06FF]/.test(text)){
-    if(/[پچژگک]/.test(text)) return 'fa-IR';
-    return 'ar-SA';
+/* ══════════════════════════════════════════
+   SPEECH
+══════════════════════════════════════════ */
+function detectLang(text) {
+  if (/[؀-ۿ]/.test(text)) {
+    return /[پچژگکی]/.test(text) ? 'fa-IR' : 'ar-SA';
   }
   return 'en-US';
 }
 
-function speakCard(side){
-  const text=document.getElementById('card-'+side).textContent;
-  if(!text) return;
+function speak(side) {
+  const text = document.getElementById('card-' + side).textContent;
+  if (!text) return;
   window.speechSynthesis.cancel();
-  const btn=document.getElementById('speak-'+side);
-  document.querySelectorAll('.speak-side-btn').forEach(b=>b.classList.remove('speaking'));
+  document.querySelectorAll('.speak-btn').forEach(b => b.classList.remove('speaking'));
+  const btn = document.getElementById('spk-' + side);
   btn.classList.add('speaking');
-  const utter=new SpeechSynthesisUtterance(text);
-  utter.lang=detectLang(text);
-  utter.rate=0.9;
-  utter.onend=()=>btn.classList.remove('speaking');
-  utter.onerror=()=>btn.classList.remove('speaking');
-  window.speechSynthesis.speak(utter);
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = detectLang(text);
+  u.rate = 0.9;
+  u.onend = () => btn.classList.remove('speaking');
+  u.onerror = () => btn.classList.remove('speaking');
+  window.speechSynthesis.speak(u);
 }
 
-renderStudy();renderForms();
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function toPersian(n) {
+  return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escQ(s) { return String(s).replace(/'/g,"\\'"); }
 
-// غیرفعال کردن service worker که باعث مشکل ذخیره میشه
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>{
-    regs.forEach(r=>r.unregister());
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ══════════════════════════════════════════
+   QUICK-ADD SHEET
+══════════════════════════════════════════ */
+let qaOpen = false;
+let qaDeck = null;
+let qaParsed = [];
+
+function toggleQA() {
+  qaOpen ? closeQA() : openQA();
+}
+
+function openQA() {
+  qaOpen = true;
+  document.getElementById('fab').classList.add('open');
+  document.getElementById('qa-overlay').classList.add('show');
+  document.getElementById('qa-sheet').classList.add('show');
+  renderQADecks();
+  setTimeout(() => document.getElementById('qa-paste').focus(), 350);
+}
+
+function closeQA() {
+  qaOpen = false;
+  document.getElementById('fab').classList.remove('open');
+  document.getElementById('qa-overlay').classList.remove('show');
+  document.getElementById('qa-sheet').classList.remove('show');
+  // reset
+  document.getElementById('qa-paste').value = '';
+  document.getElementById('qa-parse-result').style.display = 'none';
+  document.getElementById('qa-manual').style.display = 'none';
+  document.getElementById('qa-hint').style.display = '';
+  document.getElementById('qa-q').value = '';
+  document.getElementById('qa-a').value = '';
+  qaParsed = [];
+}
+
+function renderQADecks() {
+  if (!qaDeck || !data.decks.includes(qaDeck)) qaDeck = data.decks[0];
+  document.getElementById('qa-deck-row').innerHTML = data.decks.map(d =>
+    `<button class="qa-deck-chip ${d===qaDeck?'active':''}" onclick="setQADeck('${escQ(d)}')">${d}</button>`
+  ).join('');
+}
+
+function setQADeck(d) { qaDeck = d; renderQADecks(); }
+
+// Smart parser
+function smartParse(raw) {
+  const text = raw.trim();
+  if (!text) return [];
+
+  // Try separator formats first: "q = a" or "q | a" per line
+  const sepLines = text.split('\n').map(l => l.trim()).filter(l => l);
+  const eqPairs = sepLines.map(l => {
+    const m = l.match(/^(.+?)\s*[=|]\s*(.+)$/);
+    return m ? { q: m[1].trim(), a: m[2].trim() } : null;
   });
+  if (eqPairs.every(p => p !== null) && eqPairs.length > 0) return eqPairs;
+
+  // Two-line pairs
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+  if (lines.length === 1) return [{ q: lines[0], a: '' }]; // just q, need a
+  const pairs = [];
+  for (let i = 0; i+1 < lines.length; i += 2) {
+    pairs.push({ q: lines[i], a: lines[i+1] });
+  }
+  return pairs;
 }
 
-// تست localStorage
-try{
+document.addEventListener('DOMContentLoaded', () => {
+  const pa = document.getElementById('qa-paste');
+  if (pa) {
+    pa.addEventListener('input', () => {
+      const raw = pa.value;
+      if (!raw.trim()) {
+        document.getElementById('qa-parse-result').style.display = 'none';
+        document.getElementById('qa-manual').style.display = 'none';
+        document.getElementById('qa-hint').style.display = '';
+        qaParsed = [];
+        return;
+      }
+      qaParsed = smartParse(raw);
+      document.getElementById('qa-hint').style.display = 'none';
+
+      if (qaParsed.length === 1 && !qaParsed[0].a) {
+        // single question — show manual answer field
+        document.getElementById('qa-q').value = qaParsed[0].q;
+        document.getElementById('qa-manual').style.display = 'flex';
+        document.getElementById('qa-parse-result').style.display = 'none';
+        setTimeout(() => document.getElementById('qa-a').focus(), 50);
+      } else {
+        // show parsed pairs preview
+        document.getElementById('qa-manual').style.display = 'none';
+        const res = document.getElementById('qa-parse-result');
+        res.style.display = 'flex';
+        res.innerHTML = qaParsed.map(p =>
+          `<div class="qa-pair">
+            <span class="qa-pair-q">${esc(p.q)}</span>
+            <span class="qa-pair-sep">→</span>
+            <span class="qa-pair-a">${esc(p.a)}</span>
+          </div>`
+        ).join('') +
+        `<div style="font-size:0.7rem;color:var(--green);padding:2px 4px">
+          ✅ ${toPersian(qaParsed.length)} کارت آماده
+        </div>`;
+      }
+    });
+  }
+});
+
+function qaSave() {
+  const deck = qaDeck || data.decks[0];
+  let toSave = [];
+
+  const manualVisible = document.getElementById('qa-manual').style.display !== 'none';
+  if (manualVisible) {
+    const q = document.getElementById('qa-q').value.trim();
+    const a = document.getElementById('qa-a').value.trim();
+    if (!q) { toast('⚠️ سوال رو بنویس'); return; }
+    if (!a) { toast('⚠️ جواب رو بنویس'); return; }
+    toSave = [{ q, a }];
+  } else {
+    if (!qaParsed.length) { toast('⚠️ چیزی وارد نکردی'); return; }
+    toSave = qaParsed.filter(p => p.q && p.a);
+    if (!toSave.length) { toast('⚠️ فرمت درست نیست'); return; }
+  }
+
+  toSave.forEach((p, i) => {
+    data.cards.push({ id: Date.now() + Math.random() + i, deck, q: p.q, a: p.a, box: 1, due: Date.now() });
+  });
+  saveData();
+  updateStats();
+  closeQA();
+  if (document.getElementById('screen-study').classList.contains('active')) renderStudy();
+  toast('✅ ' + toPersian(toSave.length) + ' کارت اضافه شد!');
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+// Check localStorage
+try {
   localStorage.setItem('_test','1');
   localStorage.removeItem('_test');
-}catch(e){
-  setTimeout(()=>toast('⚠️ Private Mode رو خاموش کن — ذخیره کار نمیکنه'),1500);
+} catch(e) {
+  setTimeout(() => toast('⚠️ Private Mode — ذخیره کار نمیکنه'), 1000);
 }
+
+// Unregister any leftover service workers
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+}
+
+renderStudy();
+updateStats();
 </script>
-</body>
-</html>
