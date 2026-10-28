@@ -545,6 +545,41 @@ body::before {
 .speak-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .speak-btn.speaking { border-color: var(--green); color: var(--green); background: var(--green-soft); animation: pulse 0.8s infinite; }
 
+/* ── Mode toggle pill ── */
+.mode-toggle-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+.mode-pill {
+  display: flex;
+  background: var(--surface);
+  border: 1.5px solid var(--border-mid);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+  box-shadow: var(--shadow-sm);
+}
+.mode-pill-btn {
+  height: 30px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  font-family: var(--font-fa);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .18s, color .18s, box-shadow .18s;
+  background: transparent;
+  color: var(--fg3);
+}
+.mode-pill-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 8px rgba(92,91,229,.35);
+}
+
 /* ── Answer buttons — REDESIGNED ── */
 .ans-row {
   display: grid;
@@ -556,6 +591,33 @@ body::before {
   transition: opacity 0.28s, transform 0.28s;
 }
 .ans-row.show { opacity: 1; pointer-events: all; transform: translateY(0); }
+
+/* ── Simple 2-button row ── */
+.ans-row-simple {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%; max-width: 480px;
+  opacity: 0; pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.28s, transform 0.28s;
+}
+.ans-row-simple.show { opacity: 1; pointer-events: all; transform: translateY(0); }
+.btn-simple-know {
+  height: 56px;
+  border: none;
+  border-radius: var(--r-md);
+  font-family: var(--font-fa);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: transform .12s, filter .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-simple-know       { background: var(--green); color: #fff; box-shadow: 0 4px 14px rgba(5,150,105,.3); }
+.btn-simple-dontknow   { background: var(--red);   color: #fff; box-shadow: 0 4px 14px rgba(224,62,62,.25); }
+.btn-simple-know:active, .btn-simple-dontknow:active { transform: scale(.97); filter: brightness(.93); }
 
 .ans-btn {
   border: 1.5px solid transparent;
@@ -966,7 +1028,15 @@ textarea { resize: vertical; min-height: 70px; }
       <button class="speak-btn" id="spk-a" onclick="speak('a')">🔊 پشت</button>
     </div>
 
-    <!-- Answer -->
+    <!-- Mode toggle -->
+    <div class="mode-toggle-wrap">
+      <div class="mode-pill">
+        <button class="mode-pill-btn active" id="mpb-simple"   onclick="setStudyMode('simple')">ساده</button>
+        <button class="mode-pill-btn"        id="mpb-advanced" onclick="setStudyMode('advanced')">پیشرفته</button>
+      </div>
+    </div>
+
+    <!-- Answer — advanced (4 buttons) -->
     <div class="ans-row" id="ans-row">
       <button class="ans-btn btn-again" onclick="answer(0)">
         <span class="ans-emoji">❌</span>
@@ -988,6 +1058,12 @@ textarea { resize: vertical; min-height: 70px; }
         <span class="ans-label">راحت</span>
         <span class="ans-interval" id="int-3"></span>
       </button>
+    </div>
+
+    <!-- Answer — simple (2 buttons) -->
+    <div class="ans-row-simple" id="ans-row-simple">
+      <button class="btn-simple-know btn-simple-dontknow" onclick="answer(0)">❌ نمیدونم</button>
+      <button class="btn-simple-know"                     onclick="answer(2)">✅ میدونم</button>
     </div>
 
   </div>
@@ -1305,6 +1381,7 @@ function renderStudy() {
   renderLeitnerMini();
   renderDeckBar();
   updateStats();
+  applyStudyModeUI();
   queue = getDue();
   cidx = 0;
   lastCharPct = -1;
@@ -1318,6 +1395,7 @@ function showCard() {
   const wrap       = document.getElementById('card-wrap');
   const progR      = document.getElementById('progress-row');
   const ansR       = document.getElementById('ans-row');
+  const ansSimpleR  = document.getElementById('ans-row-simple');
   const spkR       = document.getElementById('speak-row');
 
   // No cards at all
@@ -1327,6 +1405,7 @@ function showCard() {
     wrap.style.display = 'none';
     progR.style.display = 'none';
     ansR.classList.remove('show');
+    ansSimpleR.classList.remove('show');
     spkR.classList.remove('show');
     return;
   }
@@ -1338,6 +1417,7 @@ function showCard() {
     wrap.style.display = 'none';
     progR.style.display = 'none';
     ansR.classList.remove('show');
+    ansSimpleR.classList.remove('show');
     spkR.classList.remove('show');
     return;
   }
@@ -1385,6 +1465,7 @@ function showCard() {
   inner.offsetHeight;
   inner.style.transition = '';
   ansR.classList.remove('show');
+  ansSimpleR.classList.remove('show');
 
   // Clear flash
   document.getElementById('card-flash').className = 'card-result-flash';
@@ -1404,11 +1485,45 @@ function detectTextDir(text) {
   return ltrChars > rtlChars ? 'ltr' : 'rtl';
 }
 
+/* ── Study mode (simple / advanced) ── */
+let studyMode = (function() {
+  try { return localStorage.getItem('fc_study_mode') || 'simple'; } catch(e) { return 'simple'; }
+})();
+
+function setStudyMode(m) {
+  studyMode = m;
+  try { localStorage.setItem('fc_study_mode', m); } catch(e) {}
+  document.getElementById('mpb-simple').classList.toggle('active',   m === 'simple');
+  document.getElementById('mpb-advanced').classList.toggle('active', m === 'advanced');
+  // If card is already flipped, show the right row immediately
+  if (flipped) {
+    const advRow    = document.getElementById('ans-row');
+    const simpleRow = document.getElementById('ans-row-simple');
+    if (m === 'simple') {
+      advRow.classList.remove('show');
+      simpleRow.classList.add('show');
+    } else {
+      simpleRow.classList.remove('show');
+      advRow.classList.add('show');
+    }
+  }
+}
+
+function applyStudyModeUI() {
+  document.getElementById('mpb-simple').classList.toggle('active',   studyMode === 'simple');
+  document.getElementById('mpb-advanced').classList.toggle('active', studyMode === 'advanced');
+}
+
 function flipCard() {
   if (flipped) return;
   flipped = true;
   document.getElementById('card-inner').classList.add('flipped');
-  document.getElementById('ans-row').classList.add('show');
+  // Show correct button row based on mode
+  if (studyMode === 'simple') {
+    document.getElementById('ans-row-simple').classList.add('show');
+  } else {
+    document.getElementById('ans-row').classList.add('show');
+  }
   // Haptic feedback (iOS)
   if (navigator.vibrate) navigator.vibrate(8);
 }
