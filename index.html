@@ -1529,9 +1529,9 @@ function answer(q) {
    SCREEN SWIPE NAVIGATION
 ══════════════════════════════════════════ */
 (function initScreenSwipe() {
-  let sx = 0, sy = 0, tracking = false;
+  let sx = 0, sy = 0, tracking = false, horizConfirmed = false;
 
-  document.getElementById('screens-wrapper').addEventListener('touchstart', e => {
+  document.addEventListener('touchstart', e => {
     // Don't steal card swipe
     if (e.target.closest('#card-wrap')) return;
     // Don't fire when QA sheet is open
@@ -1539,19 +1539,31 @@ function answer(q) {
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
     tracking = true;
+    horizConfirmed = false;
   }, { passive: true });
 
-  document.getElementById('screens-wrapper').addEventListener('touchend', e => {
+  document.addEventListener('touchmove', e => {
     if (!tracking) return;
+    const dx = e.touches[0].clientX - sx;
+    const dy = e.touches[0].clientY - sy;
+    // Confirm horizontal intent early (10px horizontal, less than 45deg)
+    if (!horizConfirmed && Math.abs(dx) > 10) {
+      if (Math.abs(dy) < Math.abs(dx)) horizConfirmed = true;
+      else tracking = false; // vertical scroll — cancel
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (!tracking || !horizConfirmed) { tracking = false; return; }
     tracking = false;
+    horizConfirmed = false;
     const dx = e.changedTouches[0].clientX - sx;
     const dy = e.changedTouches[0].clientY - sy;
-    // Must be mostly horizontal and above threshold
-    if (Math.abs(dx) < 70 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+    // Threshold: 60px horizontal, angle check
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.7) return;
 
     const idx = SCREENS.indexOf(currentScreen);
-    // In RTL: swipe left (dx < 0) = go to next tab (right direction in SCREENS)
-    //         swipe right (dx > 0) = go to prev tab
+    // RTL: swipe left (dx < 0) = next tab, swipe right (dx > 0) = prev tab
     if (dx < 0 && idx < SCREENS.length - 1) {
       showScreen(SCREENS[idx + 1]);
     } else if (dx > 0 && idx > 0) {
