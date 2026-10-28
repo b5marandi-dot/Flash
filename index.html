@@ -1808,9 +1808,8 @@ function updateProgressBar(done, total) {
     void char.offsetWidth;
     char.classList.add(pct >= 100 ? 'celebrate' : 'bounce');
   } else {
-    char.classList.remove('bounce');
-    void char.offsetWidth;
-    if (done > 0) char.classList.add('bounce');
+    // No repeat bounce — just clear any stale class
+    char.classList.remove('bounce', 'celebrate');
   }
 
   ['25','50','75'].forEach(m => {
